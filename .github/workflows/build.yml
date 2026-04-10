@@ -31,7 +31,7 @@ jobs:
             -scheme KeePassium \
             -configuration Release \
             -archivePath ./build/KeePassium.xcarchive \
-            -sdk iphoneos \
+            -destination 'generic/platform=iOS'
             CODE_SIGNING_ALLOWED=NO
 
       - name: Export IPA
