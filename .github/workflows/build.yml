@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-26-arm64 # 使用 GitHub 提供的最新 macOS 环境
+    runs-on: macos-15 # 使用 GitHub 提供的最新 macOS 环境
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           # 镜像文档显示 Xcode 26.4 可用，且包含 iOS 26.4 SDK
-          xcode-version: "26.4"
+          xcode-version: "26.3"
 
       - name: Build Archive
         run: |
