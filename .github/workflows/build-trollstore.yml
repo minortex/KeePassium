@@ -20,6 +20,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache Swift packages and DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+            ~/Library/Developer/Xcode/DerivedData/KeePassiumTrollStore
+          key: ${{ runner.os }}-${{ runner.arch }}-xcode26.3-keepassium-${{ hashFiles('KeePassium.xcodeproj/project.pbxproj', 'KeePassiumLib/KeePassiumLib.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-xcode26.3-keepassium-
+            ${{ runner.os }}-${{ runner.arch }}-keepassium-
+
       - name: Select Xcode
         run: |
           if [ ! -d "$XCODE_PATH" ]; then
@@ -51,7 +63,7 @@ jobs:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -archivePath "$GITHUB_WORKSPACE/build/KeePassiumPro.xcarchive" \
-            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -derivedDataPath "$HOME/Library/Developer/Xcode/DerivedData/KeePassiumTrollStore" \
             SDKROOT=iphoneos \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
