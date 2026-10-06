@@ -33,7 +33,11 @@ jobs:
       - name: Install ldid
         run: |
           curl -fL --output "$RUNNER_TEMP/ldid" "$LDID_URL"
-          echo "$LDID_SHA256  $RUNNER_TEMP/ldid" | shasum -a 256 -c -
+          ACTUAL_SHA256=$(shasum -a 256 "$RUNNER_TEMP/ldid" | cut -d ' ' -f 1)
+          if [ "$ACTUAL_SHA256" != "$LDID_SHA256" ]; then
+            echo "ldid checksum mismatch: $ACTUAL_SHA256" >&2
+            exit 1
+          fi
           chmod +x "$RUNNER_TEMP/ldid"
 
       - name: Validate TrollStore entitlements
