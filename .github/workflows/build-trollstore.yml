@@ -51,6 +51,8 @@ jobs:
             exit 1
           fi
           chmod +x "$RUNNER_TEMP/ldid"
+          codesign --force --sign - --timestamp=none "$RUNNER_TEMP/ldid"
+          codesign --verify --verbose=2 "$RUNNER_TEMP/ldid"
 
       - name: Validate TrollStore entitlements
         run: plutil -lint .github/trollstore/KeePassiumPro.entitlements .github/trollstore/KeePassiumProAutoFill.entitlements
