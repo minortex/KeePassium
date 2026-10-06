@@ -1,0 +1,122 @@
+name: Build KeePassium TrollStore IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    env:
+      XCODE_PATH: /Applications/Xcode_26.3.app/Contents/Developer
+      LDID_URL: https://github.com/opa334/ldid/releases/download/v2.1.5-procursus7-new/ldid
+      LDID_SHA256: b6aa4018e7ef3df9ee3fee5889d1626497191095215a2136ca98a81fccdf52a
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          if [ ! -d "$XCODE_PATH" ]; then
+            echo "Xcode path not found: $XCODE_PATH" >&2
+            ls -1 /Applications | grep '^Xcode' >&2 || true
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE_PATH"
+          xcodebuild -version
+
+      - name: Install ldid
+        run: |
+          curl -fL --output "$RUNNER_TEMP/ldid" "$LDID_URL"
+          echo "$LDID_SHA256  $RUNNER_TEMP/ldid" | shasum -a 256 -c -
+          chmod +x "$RUNNER_TEMP/ldid"
+
+      - name: Validate TrollStore entitlements
+        run: plutil -lint .github/trollstore/KeePassiumPro.entitlements .github/trollstore/KeePassiumProAutoFill.entitlements
+
+      - name: Build archive
+        run: |
+          xcodebuild archive \
+            -workspace KeePassium.xcworkspace \
+            -scheme "KeePassium Pro" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$GITHUB_WORKSPACE/build/KeePassiumPro.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            SDKROOT=iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            ENTITLEMENTS_REQUIRED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Sign and package IPA
+        run: |
+          set -euo pipefail
+
+          ARCHIVE_APP="$GITHUB_WORKSPACE/build/KeePassiumPro.xcarchive/Products/Applications/KeePassium Pro.app"
+          STAGING_DIR="$RUNNER_TEMP/keepassium-trollstore"
+          PAYLOAD_DIR="$STAGING_DIR/Payload"
+          APP_PATH="$PAYLOAD_DIR/KeePassium Pro.app"
+          APPEX_PATH="$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex"
+
+          test -d "$ARCHIVE_APP"
+          mkdir -p "$PAYLOAD_DIR"
+          ditto "$ARCHIVE_APP" "$APP_PATH"
+
+          test -d "$APPEX_PATH"
+          "$RUNNER_TEMP/ldid" "-S$GITHUB_WORKSPACE/.github/trollstore/KeePassiumPro.entitlements" -w "$APP_PATH"
+          "$RUNNER_TEMP/ldid" "-S$GITHUB_WORKSPACE/.github/trollstore/KeePassiumProAutoFill.entitlements" -w "$APPEX_PATH"
+          "$RUNNER_TEMP/ldid" -s "$APP_PATH"
+
+          APP_EXECUTABLE=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_PATH/Info.plist")
+          APPEX_EXECUTABLE=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APPEX_PATH/Info.plist")
+          "$RUNNER_TEMP/ldid" -e "$APP_PATH/$APP_EXECUTABLE" > "$STAGING_DIR/app.entitlements"
+          "$RUNNER_TEMP/ldid" -e "$APPEX_PATH/$APPEX_EXECUTABLE" > "$STAGING_DIR/appex.entitlements"
+
+          assert_entitlement() {
+            local file="$1"
+            local key="$2"
+            local expected="$3"
+            local actual
+            actual=$(/usr/libexec/PlistBuddy -c "Print :$key" "$file")
+            if [ "$actual" != "$expected" ]; then
+              echo "Unexpected entitlement $key in $file: $actual (expected $expected)" >&2
+              exit 1
+            fi
+          }
+
+          assert_entitlement "$STAGING_DIR/app.entitlements" "application-identifier" "TROLLTROLL.com.keepassium.ios.pro"
+          assert_entitlement "$STAGING_DIR/app.entitlements" "keychain-access-groups:0" "TROLLTROLL.com.keepassium.SharedItems"
+          assert_entitlement "$STAGING_DIR/app.entitlements" "com.apple.security.application-groups:0" "group.com.keepassium"
+          assert_entitlement "$STAGING_DIR/app.entitlements" "com.apple.developer.authentication-services.autofill-credential-provider" "true"
+
+          assert_entitlement "$STAGING_DIR/appex.entitlements" "application-identifier" "TROLLTROLL.com.keepassium.ios.pro.KeePassium-AutoFill"
+          assert_entitlement "$STAGING_DIR/appex.entitlements" "keychain-access-groups:0" "TROLLTROLL.com.keepassium.SharedItems"
+          assert_entitlement "$STAGING_DIR/appex.entitlements" "com.apple.security.application-groups:0" "group.com.keepassium"
+          assert_entitlement "$STAGING_DIR/appex.entitlements" "com.apple.developer.authentication-services.autofill-credential-provider" "true"
+
+          VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Info.plist")
+          BUILD=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP_PATH/Info.plist")
+          IPA_NAME="KeePassiumPro-${VERSION}-${BUILD}-TrollStore.ipa"
+          ARTIFACT_NAME="KeePassiumPro-TrollStore-${VERSION}-${BUILD}"
+
+          (
+            cd "$STAGING_DIR"
+            zip -qry "$GITHUB_WORKSPACE/$IPA_NAME" Payload
+          )
+
+          echo "IPA_NAME=$IPA_NAME" >> "$GITHUB_ENV"
+          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> "$GITHUB_ENV"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.IPA_NAME }}
+          if-no-files-found: error
+          retention-days: 14
