@@ -13,8 +13,7 @@ jobs:
 
     env:
       XCODE_PATH: /Applications/Xcode_26.3.app/Contents/Developer
-      LDID_URL: https://github.com/opa334/ldid/releases/download/v2.1.5-procursus7-new/ldid
-      LDID_SHA256: b6aa4018e7ef3df9ee3fee5889d162649719109521c5a2136ca98a81fccdf52a
+      HOMEBREW_NO_AUTO_UPDATE: "1"
 
     steps:
       - name: Checkout
@@ -44,15 +43,11 @@ jobs:
 
       - name: Install ldid
         run: |
-          curl -fL --output "$RUNNER_TEMP/ldid" "$LDID_URL"
-          ACTUAL_SHA256=$(shasum -a 256 "$RUNNER_TEMP/ldid" | cut -d ' ' -f 1)
-          if [ "$ACTUAL_SHA256" != "$LDID_SHA256" ]; then
-            echo "ldid checksum mismatch: $ACTUAL_SHA256" >&2
-            exit 1
+          if brew list --formula ldid >/dev/null 2>&1; then
+            brew unlink ldid || true
           fi
-          chmod +x "$RUNNER_TEMP/ldid"
-          codesign --force --sign - --timestamp=none "$RUNNER_TEMP/ldid"
-          codesign --verify --verbose=2 "$RUNNER_TEMP/ldid"
+          brew install ldid-procursus
+          ldid -h >/dev/null 2>&1 || true
 
       - name: Validate TrollStore entitlements
         run: plutil -lint .github/trollstore/KeePassiumPro.entitlements .github/trollstore/KeePassiumProAutoFill.entitlements
@@ -87,14 +82,14 @@ jobs:
           ditto "$ARCHIVE_APP" "$APP_PATH"
 
           test -d "$APPEX_PATH"
-          "$RUNNER_TEMP/ldid" "-S$GITHUB_WORKSPACE/.github/trollstore/KeePassiumPro.entitlements" -w "$APP_PATH"
-          "$RUNNER_TEMP/ldid" "-S$GITHUB_WORKSPACE/.github/trollstore/KeePassiumProAutoFill.entitlements" -w "$APPEX_PATH"
-          "$RUNNER_TEMP/ldid" -s "$APP_PATH"
+          ldid "-S$GITHUB_WORKSPACE/.github/trollstore/KeePassiumPro.entitlements" -w "$APP_PATH"
+          ldid "-S$GITHUB_WORKSPACE/.github/trollstore/KeePassiumProAutoFill.entitlements" -w "$APPEX_PATH"
+          ldid -s "$APP_PATH"
 
           APP_EXECUTABLE=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_PATH/Info.plist")
           APPEX_EXECUTABLE=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APPEX_PATH/Info.plist")
-          "$RUNNER_TEMP/ldid" -e "$APP_PATH/$APP_EXECUTABLE" > "$STAGING_DIR/app.entitlements"
-          "$RUNNER_TEMP/ldid" -e "$APPEX_PATH/$APPEX_EXECUTABLE" > "$STAGING_DIR/appex.entitlements"
+          ldid -e "$APP_PATH/$APP_EXECUTABLE" > "$STAGING_DIR/app.entitlements"
+          ldid -e "$APPEX_PATH/$APPEX_EXECUTABLE" > "$STAGING_DIR/appex.entitlements"
 
           assert_entitlement() {
             local file="$1"
