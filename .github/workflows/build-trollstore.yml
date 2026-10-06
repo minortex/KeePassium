@@ -14,7 +14,7 @@ jobs:
     env:
       XCODE_PATH: /Applications/Xcode_26.3.app/Contents/Developer
       LDID_URL: https://github.com/opa334/ldid/releases/download/v2.1.5-procursus7-new/ldid
-      LDID_SHA256: b6aa4018e7ef3df9ee3fee5889d1626497191095215a2136ca98a81fccdf52a
+      LDID_SHA256: b6aa4018e7ef3df9ee3fee5889d162649719109521c5a2136ca98a81fccdf52a
 
     steps:
       - name: Checkout
