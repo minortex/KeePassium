@@ -29,7 +29,6 @@ jobs:
             -scheme KeePassiumLib \
             -configuration Debug \
             -destination "generic/platform=iOS" \
-            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             SDKROOT=iphoneos \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
