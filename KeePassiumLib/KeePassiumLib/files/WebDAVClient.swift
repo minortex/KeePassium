@@ -204,8 +204,9 @@ public final class WebDAVClient: NSObject {
 
         let response = WebDAVResponse(
             data: ByteArray(data: context.receivedData),
-            contentLength: httpResponse.value(forHTTPHeaderField: "Content-Length").flatMap(Int64.init),
-            lastModified: Date.parse(httpHeaderValue: httpResponse.value(forHTTPHeaderField: "Last-Modified"))
+            contentLength: (httpResponse.allHeaderFields["Content-Length"] as? String).flatMap(Int64.init),
+            lastModified: Date.parse(
+                httpHeaderValue: httpResponse.allHeaderFields["Last-Modified"] as? String)
         )
         context.completion(.success(response))
     }

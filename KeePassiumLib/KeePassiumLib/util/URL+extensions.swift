@@ -70,15 +70,7 @@ public extension URL {
     }
     
     var isInTrashDirectory: Bool {
-        do {
-            let fileManager = FileManager.default
-            var relationship = FileManager.URLRelationship.other
-            try fileManager.getRelationship(&relationship, of: .trashDirectory, in: [], toItemAt: self)
-            return relationship == .contains
-        } catch {
-            let isSimpleNameMatch = self.pathComponents.contains(".Trash")
-            return isSimpleNameMatch
-        }
+        return self.pathComponents.contains(".Trash")
     }
     
     @discardableResult
