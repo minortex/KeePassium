@@ -4567,6 +4567,7 @@
 		750CFBD421BA9ACD00E62B09 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "KeePassium AutoFill/KeePassium_AutoFill.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "KeePassium AutoFill/KeePassium_AutoFill-macOS.entitlements";
@@ -4595,6 +4596,7 @@
 		750CFBD521BA9ACD00E62B09 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "KeePassium AutoFill/KeePassium_AutoFill.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "KeePassium AutoFill/KeePassium_AutoFill-macOS.entitlements";
