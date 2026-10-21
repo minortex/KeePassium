@@ -247,7 +247,7 @@ extension DateComponentsFormatter {
         _ interval: TimeInterval,
         allowedUnits: NSCalendar.Unit,
         maxUnitCount: Int = 3,
-        style: DateComponentsFormatter.UnitsStyle = .abbreviated,
+        style: DateComponentsFormatter.UnitsStyle = .short,
         addRemainingPhrase: Bool = false
         ) -> String?
     {

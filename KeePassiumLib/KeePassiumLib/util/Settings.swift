@@ -197,7 +197,7 @@ public class Settings {
                 formatter.allowedUnits = [.hour, .minute, .second]
                 formatter.collapsesLargestUnit = true
                 formatter.maximumUnitCount = 2
-                formatter.unitsStyle = .brief
+                formatter.unitsStyle = .short
                 guard let result = formatter.string(from: TimeInterval(self.rawValue)) else {
                     assertionFailure()
                     return "?"
@@ -300,7 +300,7 @@ public class Settings {
                 formatter.allowedUnits = [.weekOfMonth, .day, .hour, .minute, .second]
                 formatter.collapsesLargestUnit = true
                 formatter.maximumUnitCount = 2
-                formatter.unitsStyle = .brief
+                formatter.unitsStyle = .short
                 guard let result = formatter.string(from: TimeInterval(self.rawValue)) else {
                     assertionFailure()
                     return "?"
@@ -375,7 +375,7 @@ public class Settings {
                 formatter.allowedUnits = [.hour, .minute, .second]
                 formatter.collapsesLargestUnit = true
                 formatter.maximumUnitCount = 2
-                formatter.unitsStyle = .brief
+                formatter.unitsStyle = .short
                 guard let result = formatter.string(from: TimeInterval(self.rawValue)) else {
                     assertionFailure()
                     return "?"
