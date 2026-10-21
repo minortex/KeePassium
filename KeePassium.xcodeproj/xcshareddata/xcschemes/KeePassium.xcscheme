@@ -14,20 +14,6 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "75D0C7692174AF1F00C64C93"
-               BuildableName = "KeePassiumLib.framework"
-               BlueprintName = "KeePassiumLib"
-               ReferencedContainer = "container:KeePassiumLib/KeePassiumLib.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "754BF07A2082A6BD00E3A292"
                BuildableName = "KeePassium.app"
                BlueprintName = "KeePassium"
