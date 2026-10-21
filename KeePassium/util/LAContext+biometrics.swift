@@ -15,7 +15,7 @@ enum KPBiometryType {
 }
 
 extension LAContext {
-    public static func getBiometryType() -> KPBiometryType {
+    static func getBiometryType() -> KPBiometryType {
         let context = LAContext()
         let policy = LAPolicy.deviceOwnerAuthenticationWithBiometrics
         let isAvailable = context.canEvaluatePolicy(policy, error: nil)
