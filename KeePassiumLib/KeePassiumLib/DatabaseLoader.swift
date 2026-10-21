@@ -98,7 +98,8 @@ public class DatabaseLoader: ProgressObserver {
     private var backgroundTask: UIBackgroundTaskIdentifier?
     private func startBackgroundTask() {
         print("Starting background task")
-        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "DatabaseLoading", expirationHandler: {
+        guard let application = AppGroup.applicationShared else { return }
+        backgroundTask = application.beginBackgroundTask(withName: "DatabaseLoading", expirationHandler: {
             Diag.warning("Background task expired, loading cancelled")
             self.progress.cancel()
             self.endBackgroundTask()
@@ -115,7 +116,7 @@ public class DatabaseLoader: ProgressObserver {
         guard let bgTask = backgroundTask else { return }
         print("ending background task")
         backgroundTask = nil
-        UIApplication.shared.endBackgroundTask(bgTask)
+        AppGroup.applicationShared?.endBackgroundTask(bgTask)
     }
     
     
