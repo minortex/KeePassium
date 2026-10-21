@@ -26,17 +26,6 @@ jobs:
         run: |
           xcodebuild build \
             -workspace KeePassium.xcworkspace \
-            -scheme KeePassiumLib \
-            -configuration Debug \
-            -destination "generic/platform=iOS" \
-            SDKROOT=iphoneos \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            ENTITLEMENTS_REQUIRED=NO \
-            COMPILER_INDEX_STORE_ENABLE=NO
-
-          xcodebuild build \
-            -workspace KeePassium.xcworkspace \
             -scheme KeePassium \
             -configuration Debug \
             -destination "generic/platform=iOS" \
