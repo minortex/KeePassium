@@ -14,7 +14,7 @@ public enum DestructiveFileAction {
     
     public static func get(for location: URLReference.Location) -> DestructiveFileAction {
         switch location {
-        case .external:
+        case .external, .remote:
             return .remove
         case .internalDocuments,
              .internalBackup,

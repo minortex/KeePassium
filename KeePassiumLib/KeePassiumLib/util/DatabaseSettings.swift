@@ -11,15 +11,15 @@ import Foundation
 public class DatabaseSettings: Eraseable, Codable {
 
     public enum AccessMode: Int, Codable {
-        static let `default`: AccessMode = .readWrite 
-        
-        case readWrite = 0
+        static let `default`: AccessMode = .readOnly
+
+        case readOnly = 1
     }
 
     public let databaseRef: URLReference
-    
+
     public var accessMode: AccessMode
-    
+
     public var isRememberMasterKey: Bool?
     public var isRememberFinalKey: Bool?
     public private(set) var masterKey: CompositeKey?
@@ -27,9 +27,6 @@ public class DatabaseSettings: Eraseable, Codable {
     
     public var isRememberKeyFile: Bool?
     public private(set) var associatedKeyFile: URLReference?
-    
-    public var isRememberHardwareKey: Bool?
-    public private(set) var associatedYubiKey: YubiKey?
 
     private enum CodingKeys: String, CodingKey {
         case databaseRef
@@ -39,8 +36,6 @@ public class DatabaseSettings: Eraseable, Codable {
         case masterKey
         case isRememberKeyFile
         case associatedKeyFile
-        case isRememberHardwareKey
-        case associatedYubiKey
     }
     
     init(for databaseRef: URLReference) {
@@ -84,12 +79,6 @@ public class DatabaseSettings: Eraseable, Codable {
         }
     }
     
-    public func maybeSetMasterKey(_ key: CompositeKey) {
-        guard isRememberMasterKey ?? Settings.current.isRememberDatabaseKey else { return }
-        guard key.state >= .combinedComponents else { return }
-        setMasterKey(key)
-    }
-
     public func clearMasterKey() {
         masterKey?.erase()
         masterKey = nil
@@ -108,13 +97,4 @@ public class DatabaseSettings: Eraseable, Codable {
         setAssociatedKeyFile(urlRef)
     }
 
-    public func setAssociatedYubiKey(_ yubiKey: YubiKey?) {
-        associatedYubiKey = yubiKey
-    }
-
-    public func maybeSetAssociatedYubiKey(_ yubiKey: YubiKey?) {
-        guard isRememberHardwareKey ?? Settings.current.isKeepHardwareKeyAssociations else { return }
-        setAssociatedYubiKey(yubiKey)
-    }
 }
-

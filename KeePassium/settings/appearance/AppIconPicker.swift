@@ -23,14 +23,7 @@ class AppIconPickerCell: UITableViewCell {
 class AppIconPicker: UITableViewController, Refreshable {
     weak var delegate: AppIconPickerDelegate?
     
-    private let appIcons: [AppIcon] = {
-        switch BusinessModel.type {
-        case .freemium:
-            return [AppIcon.classicFree] + AppIcon.allCustom
-        case .prepaid:
-            return [AppIcon.classicPro, AppIcon.classicFree] + AppIcon.allCustom
-        }
-    }()
+    private let appIcons: [AppIcon] = [AppIcon.classicFree]
     
     func refresh() {
         tableView.reloadData()
@@ -57,31 +50,21 @@ class AppIconPicker: UITableViewController, Refreshable {
         cell.iconView?.image = UIImage(named: appIcon.asset)
         cell.titleLabel?.text = appIcon.name
         
-        let isAvailable = !isRequiresPurchase(appIcon)
-        cell.premiumBadge.isHidden = isAvailable
-        cell.accessibilityLabel = AccessibilityHelper.decorateAccessibilityLabel(
-            premiumFeature: appIcon.name,
-            isEnabled: isAvailable
-        )
+        cell.premiumBadge.isHidden = true
+        cell.accessibilityLabel = appIcon.name
         
-        let isCurrent = (UIApplication.shared.alternateIconName == appIcon.key)
+        var isCurrent = false
+        if #available(iOS 10.3, *) {
+            isCurrent = (UIApplication.shared.alternateIconName == appIcon.key)
+        }
         cell.accessoryType = isCurrent ? .checkmark : .none
         return cell
     }
     
-    
-    private func isRequiresPurchase(_ appIcon: AppIcon) -> Bool {
-        guard AppIcon.isPremium(appIcon) else {
-            return false
-        }
-        return !PremiumManager.shared.isAvailable(feature: .canChangeAppIcon)
-    }
-    
-    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let selectedIcon = appIcons[indexPath.row]
-        delegate?.didSelectIcon(selectedIcon, in: self)
+        guard #available(iOS 10.3, *) else { return }
+        delegate?.didSelectIcon(appIcons[indexPath.row], in: self)
         tableView.reloadData()
     }
 }

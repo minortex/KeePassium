@@ -33,7 +33,8 @@ public enum FileProvider: Hashable {
         "com.synology.DSfile.ExtFileProvider": .synologyDSfile,
         "com.tresorit.ios.TresoritiOS-DocumentProviderFileProvider": .tresorit,
         "com.apple.filesystems.UserFS.FileProvider": .usbDrive,
-        "ru.yandex.disk.filesext": .yandexDisk
+        "ru.yandex.disk.filesext": .yandexDisk,
+        "com.keepassium.fileprovider.webdav": .keepassiumWebDAV
     ]
     private static let idByProvider: [FileProvider: String] =
             Dictionary(uniqueKeysWithValues: FileProvider.providerByID.map { ($1, $0) })
@@ -62,6 +63,7 @@ public enum FileProvider: Hashable {
     case tresorit
     case usbDrive
     case yandexDisk
+    case keepassiumWebDAV
     
     case localStorage
     case other(id: String)
@@ -226,6 +228,12 @@ public enum FileProvider: Hashable {
                 bundle: Bundle.framework,
                 value: "Yandex.Disk",
                 comment: "Localized name of the storage service: Yandex.Disk (https://disk.yandex.com)")
+        case .keepassiumWebDAV:
+            return NSLocalizedString(
+                "[FileProvider/WebDAV/name]",
+                bundle: Bundle.framework,
+                value: "WebDAV",
+                comment: "Name of the built-in WebDAV connection")
         case .localStorage:
             return getLocalStorageName()
         case .other(let id):

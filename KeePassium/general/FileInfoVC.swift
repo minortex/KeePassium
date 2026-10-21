@@ -184,8 +184,7 @@ class FileInfoVC: UITableViewController {
 
     func setupButtons() {
         exportButton?.isHidden = !canExport
-        let destructiveAction = DestructiveFileAction.get(for: urlRef.location)
-        deleteButton?.setTitle(destructiveAction.title, for: .normal)
+        deleteButton?.isHidden = true
     }
     
     
@@ -254,6 +253,9 @@ class FileInfoVC: UITableViewController {
             if isInTrash ?? false {
                 components.append(LString.trashDirectoryName)
             }
+        case .remote:
+            components.append(fileProvider.localizedName)
+            components.append(urlRef.location.description)
         case .internalDocuments, .internalBackup, .internalInbox:
             components.append(fileProvider.localizedName)
             components.append(AppInfo.name)

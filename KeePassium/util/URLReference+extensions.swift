@@ -34,6 +34,8 @@ extension URLReference {
             }
         case .internalBackup:
             return UIImage(asset: .databaseBackupListitem)
+        case .remote:
+            return UIImage(asset: .fileProviderGenericListitem)
         }
     }
     

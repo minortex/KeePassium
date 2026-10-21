@@ -19,31 +19,14 @@ protocol QRCodeScanner: AnyObject {
 
 final class YubiKitQRCodeScanner: QRCodeScanner {
     var deviceSupportsQRScanning: Bool {
-        return YubiKitDeviceCapabilities.supportsQRCodeScanning
+        return false
     }
 
-    private let session = YKFQRReaderSession()
-
     func scanQRCode(presenter: UIViewController, completion: @escaping (Result<String, Error>) -> Void) {
-        Diag.debug("Showing QR code scanner")
-
-        session.scanQrCode(withPresenter: presenter) { (data, error) in
-            if let error = error {
-                Diag.error("Scanning QR code failed [message: \(error.localizedDescription)]")
-                HapticFeedback.play(.error)
-                completion(.failure(error))
-                return
-            }
-
-            if let data = data {
-                Diag.debug("QR code scanning successful")
-                HapticFeedback.play(.qrCodeScanned)
-                completion(.success(data))
-                return
-            }
-
-            Diag.error("Invalid state with no data and no error")
-            assertionFailure()
-        }
+        let error = NSError(
+            domain: "KeePassium",
+            code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "QR code scanning is not supported on iOS 9."])
+        completion(.failure(error))
     }
 }

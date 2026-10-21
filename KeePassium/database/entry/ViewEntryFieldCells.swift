@@ -172,15 +172,17 @@ class URLFieldCell: ViewableFieldCell {
         openURLButton.addGestureRecognizer(longTapRecognizer)
         accessoryView = openURLButton
         
-        let openURLAction = UIAccessibilityCustomAction(
-            name: LString.actionOpenURL,
-            target: self,
-            selector: #selector(didPressOpenURLButton))
-        let shareAction = UIAccessibilityCustomAction(
-            name: LString.actionShare,
-            target: self,
-            selector: #selector(didPressShare(_:)))
-        accessibilityCustomActions = [openURLAction, shareAction]
+        if #available(iOS 13, *) {
+            let openURLAction = UIAccessibilityCustomAction(
+                name: LString.actionOpenURL,
+                target: self,
+                selector: #selector(didPressOpenURLButton))
+            let shareAction = UIAccessibilityCustomAction(
+                name: LString.actionShare,
+                target: self,
+                selector: #selector(didPressShare(_:)))
+            accessibilityCustomActions = [openURLAction, shareAction]
+        }
         valueText.accessibilityTraits = .link
     }
     
@@ -198,7 +200,7 @@ class URLFieldCell: ViewableFieldCell {
     @objc
     private func didPressOpenURLButton(_ sender: UIButton) {
         guard let url = url else { return }
-        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        UIApplication.shared.kp_open(url)
     }
 }
 

@@ -10,9 +10,6 @@ import Foundation
 
 public extension UserDefaults {
     static var appGroupShared: UserDefaults {
-        guard let instance = UserDefaults(suiteName: AppGroup.id) else {
-            fatalError("Failed to create app group user defaults.")
-        }
-        return instance
+        return UserDefaults.standard
     }
 }

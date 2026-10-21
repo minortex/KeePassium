@@ -37,17 +37,14 @@ public class Keychain {
     
     private static let accessGroup: String? = nil
     private enum Service: String {
-        static let allValues: [Service] = [.general, .databaseKeys, databaseSettings, .premium]
+        static let allValues: [Service] = [.general, .databaseKeys, databaseSettings, .networkCredentials]
         
         case general = "KeePassium"
         case databaseKeys = "KeePassium.dbKeys"
         case databaseSettings = "KeePassium.dbSettings"
-        case premium = "KeePassium.premium"
+        case networkCredentials = "KeePassium.networkCredentials"
     }
     private let appPasscodeAccount = "appPasscode"
-    private let premiumExpiryDateAccount = "premiumExpiryDate"
-    private let premiumProductAccount = "premiumProductID"
-    private let premiumFallbackDateAccount = "premiumFallbackDate"
     
     private init() {
         cleanupObsoleteKeys()
@@ -182,58 +179,32 @@ public class Keychain {
     internal func removeDatabaseSettings(for descriptor: URLReference.Descriptor) throws {
         try remove(service: .databaseSettings, account: descriptor) 
     }
-    
-    
-    
-    public func setPremiumExpiry(for product: InAppProduct, to expiryDate: Date) throws {
-        let timestampBytes = UInt64(expiryDate.timeIntervalSinceReferenceDate).data
-        let productID = product.rawValue.dataUsingUTF8StringEncoding
-        try set(service: .premium, account: premiumProductAccount, data: productID)
-        try set(service: .premium, account: premiumExpiryDateAccount, data: timestampBytes.asData)
-    }
-    
-    #if DEBUG
-    public func clearPremiumExpiryDate() throws {
-        try remove(service: .premium, account: premiumExpiryDateAccount)
-    }
-    #endif
-    
-    public func getPremiumExpiryDate() throws -> Date? {
-        guard let data = try get(service: .premium, account: premiumExpiryDateAccount) else {
-            return nil
-        }
-        guard let timestamp = UInt64(data: ByteArray(data: data)) else {
-            assertionFailure()
-            return nil
-        }
-        return Date(timeIntervalSinceReferenceDate: Double(timestamp))
-    }
-    
-    public func getPremiumProduct() throws -> InAppProduct? {
-        guard let data = try get(service: .premium, account: premiumProductAccount),
-            let productIDString = String(data: data, encoding: .utf8) else { return nil }
-        guard let product = InAppProduct(rawValue: productIDString) else { return nil }
-        return product
-    }
-    
-    internal func setPremiumFallbackDate(_ date: Date?) throws {
-        guard let date = date else {
-            try remove(service: .premium, account: premiumFallbackDateAccount)
-            return
-        }
+}
 
-        let timestampBytes = UInt64(date.timeIntervalSinceReferenceDate).data
-        try set(service: .premium, account: premiumFallbackDateAccount, data: timestampBytes.asData)
+internal extension Keychain {
+    func getNetworkCredential(for url: URL) throws -> NetworkCredential? {
+        guard let data = try get(
+            service: .networkCredentials,
+            account: url.absoluteString
+        ) else {
+            return nil
+        }
+        return NetworkCredential.deserialize(from: data)
     }
-    
-    internal func getPremiumFallbackDate() throws -> Date? {
-        guard let data = try get(service: .premium, account: premiumFallbackDateAccount) else {
-            return nil
-        }
-        guard let timestamp = UInt64(data: ByteArray(data: data)) else {
-            assertionFailure()
-            return nil
-        }
-        return Date(timeIntervalSinceReferenceDate: Double(timestamp))
+
+    func store(networkCredential: NetworkCredential, for url: URL) throws {
+        try set(
+            service: .networkCredentials,
+            account: url.absoluteString,
+            data: networkCredential.serialize()
+        )
+    }
+
+    func removeNetworkCredential(for url: URL) throws {
+        try remove(service: .networkCredentials, account: url.absoluteString)
+    }
+
+    func removeAllNetworkCredentials() throws {
+        try remove(service: .networkCredentials, account: nil)
     }
 }

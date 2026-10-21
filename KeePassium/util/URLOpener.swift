@@ -34,14 +34,7 @@ class URLOpener: NSObject {
         url: URL,
         completionHandler: ((Bool)->Void)?=nil
     ) {
-        assert(!AppGroup.isMainApp, "Use UIApplication.openURL() instead")
-        
-        #if MAIN_APP
-        application?.open(url, options: [:], completionHandler: completionHandler)
-        #else
-        let result = openURL(url)
-        completionHandler?(result)
-        #endif
+        application?.kp_open(url, completionHandler: completionHandler)
     }
 
         
@@ -50,8 +43,17 @@ class URLOpener: NSObject {
         return result ?? false
     }
     
-    @objc private func openURL(_ url: URL) -> Bool {
-        let result = application?.perform(#selector(openURL(_:)), with: url)
-        return result != nil
+}
+
+extension UIApplication {
+    func kp_open(
+        _ url: URL,
+        completionHandler: ((Bool) -> Void)? = nil
+    ) {
+        if #available(iOS 10, *) {
+            open(url, options: [:], completionHandler: completionHandler)
+        } else {
+            completionHandler?(openURL(url))
+        }
     }
 }

@@ -19,10 +19,17 @@ extension UIFont {
         if UIAccessibility.isBoldTextEnabled {
             font = UIFont.boldSystemFont(ofSize: size)
         } else {
-            font = UIFont.systemFont(ofSize: size, weight: weight)
+            if #available(iOS 8.2, *) {
+                font = UIFont.systemFont(ofSize: size, weight: weight)
+            } else {
+                font = UIFont.systemFont(ofSize: size)
+            }
         }
-        let fontMetrics = UIFontMetrics(forTextStyle: style)
-        return fontMetrics.scaledFont(for: font)
+        if #available(iOS 11, *) {
+            return UIFontMetrics(forTextStyle: style).scaledFont(for: font)
+        } else {
+            return font.withSize(size * UIFont.preferredFont(forTextStyle: style).pointSize / 17)
+        }
     }
     
     public static func monospaceFont(
@@ -41,7 +48,10 @@ extension UIFont {
                 font = UIFont(name: "Menlo", size: size) ?? UIFont.systemFont(ofSize: size)
             }
         }
-        let fontMetrics = UIFontMetrics(forTextStyle: style)
-        return fontMetrics.scaledFont(for: font)
+        if #available(iOS 11, *) {
+            return UIFontMetrics(forTextStyle: style).scaledFont(for: font)
+        } else {
+            return font.withSize(size * UIFont.preferredFont(forTextStyle: style).pointSize / 17)
+        }
     }
 }

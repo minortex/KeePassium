@@ -26,33 +26,13 @@ class CollectionViewControllerWithContextActions: UICollectionViewController {
         return []
     }
     
+    @available(iOS 9, *)
     override func collectionView(
         _ collectionView: UICollectionView,
         canEditItemAt indexPath: IndexPath
     ) -> Bool {
         let itemActions = getContextActionsForItem(at: indexPath)
         return itemActions.count > 0
-    }
-    
-    
-    
-    @available(iOS 13, *)
-    override func collectionView(
-        _ collectionView: UICollectionView,
-        contextMenuConfigurationForItemAt indexPath: IndexPath,
-        point: CGPoint
-    ) -> UIContextMenuConfiguration? {
-        let menuActions = getContextActionsForItem(at: indexPath)
-            .map { $0.toMenuAction() }
-        
-        guard menuActions.count > 0 else {
-            return nil
-        }
-        
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) {
-            (suggestedActions) in
-            return UIMenu(title: "", children: menuActions)
-        }
     }
     
     

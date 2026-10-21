@@ -34,7 +34,7 @@ class SettingsVC: UITableViewController, Refreshable {
     private var settingsNotifications: SettingsNotifications!
     
     private var router: NavigationRouter! 
-    private var isPremiumSectionHidden = false
+    private let isPremiumSectionHidden = true
     
     private enum CellIndexPath {
         static let premiumSectionIndex = 0
@@ -64,22 +64,8 @@ class SettingsVC: UITableViewController, Refreshable {
         clearsSelectionOnViewWillAppear = true
         
         settingsNotifications = SettingsNotifications(observer: self)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(refreshPremiumStatus),
-            name: PremiumManager.statusUpdateNotification,
-            object: nil)
-        if BusinessModel.type == .prepaid {
-            isPremiumSectionHidden = true
-            setPremiumCellVisibility(premiumTrialCell, isHidden: true)
-            setPremiumCellVisibility(premiumStatusCell, isHidden: true)
-            setPremiumCellVisibility(manageSubscriptionCell, isHidden: true)
-            setPremiumCellVisibility(appHistoryCell, isHidden: true)
-        }
-        refreshPremiumStatus()
-        #if DEBUG
-        premiumTrialCell.accessoryType = .detailButton
-        #endif
+        hidePremiumCells()
+        autoFillCell.isHidden = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -95,15 +81,11 @@ class SettingsVC: UITableViewController, Refreshable {
     
     deinit {
         diagnosticsViewerCoordinator = nil
-        appHistoryCoordinator = nil
-        premiumCoordinator = nil
     }
     
     func dismissPopover(animated: Bool) {
         self.dismiss(animated: animated) { [self] in 
             self.diagnosticsViewerCoordinator = nil
-            self.appHistoryCoordinator = nil
-            self.premiumCoordinator = nil
         }
     }
     
@@ -126,41 +108,20 @@ class SettingsVC: UITableViewController, Refreshable {
                     value: "App Lock, passcode, timeout",
                     comment: "Settings: subtitle of the `App Protection` section when biometric auth is not available.")
         }
-        refreshPremiumStatus()
-        
         contactSupportCell.accessibilityValue = SupportEmailComposer.getSupportEmail()
     }
-    
-    
-    private func setPremiumCellVisibility(_ cell: UITableViewCell, isHidden: Bool) {
-        cell.isHidden = isHidden
-        if isHidden {
-            switch cell {
-            case premiumTrialCell:
-                hiddenIndexPaths.insert(CellIndexPath.premiumTrial)
-            case premiumStatusCell:
-                hiddenIndexPaths.insert(CellIndexPath.premiumStatus)
-            case manageSubscriptionCell:
-                hiddenIndexPaths.insert(CellIndexPath.manageSubscription)
-            case appHistoryCell:
-                hiddenIndexPaths.insert(CellIndexPath.appHistoryCell)
-            default:
-                break
-            }
-        } else {
-            switch cell {
-            case premiumTrialCell:
-                hiddenIndexPaths.remove(CellIndexPath.premiumTrial)
-            case premiumStatusCell:
-                hiddenIndexPaths.remove(CellIndexPath.premiumStatus)
-            case manageSubscriptionCell:
-                hiddenIndexPaths.remove(CellIndexPath.manageSubscription)
-            case appHistoryCell:
-                hiddenIndexPaths.remove(CellIndexPath.appHistoryCell)
-            default:
-                break
-            }
-        }
+
+    private func hidePremiumCells() {
+        premiumTrialCell.isHidden = true
+        premiumStatusCell.isHidden = true
+        manageSubscriptionCell.isHidden = true
+        appHistoryCell.isHidden = true
+        hiddenIndexPaths = Set([
+            CellIndexPath.premiumTrial,
+            CellIndexPath.premiumStatus,
+            CellIndexPath.manageSubscription,
+            CellIndexPath.appHistoryCell
+        ])
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -199,9 +160,6 @@ class SettingsVC: UITableViewController, Refreshable {
         case appSafetyCell:
             let appLockSettingsVC = SettingsAppLockVC.instantiateFromStoryboard()
             show(appLockSettingsVC, sender: self)
-        case autoFillCell:
-            let autoFillSettingsVC = SettingsAutoFillVC.instantiateFromStoryboard()
-            show(autoFillSettingsVC, sender: self)
         case dataSafetyCell:
             let dataProtectionSettingsVC = SettingsDataProtectionVC.instantiateFromStoryboard()
             show(dataProtectionSettingsVC, sender: self)
@@ -213,21 +171,13 @@ class SettingsVC: UITableViewController, Refreshable {
         case dataBackupCell:
             let dataBackupSettingsVC = SettingsBackupVC.instantiateFromStoryboard()
             show(dataBackupSettingsVC, sender: self)
-        case premiumStatusCell:
-            didPressUpgradeToPremium()
-        case premiumTrialCell:
-            didPressUpgradeToPremium()
-        case manageSubscriptionCell:
-            didPressManageSubscription()
-        case appHistoryCell:
-            didPressShowAppHistory()
         case diagnosticLogCell:
             didPressShowDiagnostics()
         case contactSupportCell:
             let popoverAnchor = PopoverAnchor(tableView: tableView, at: indexPath)
             SupportEmailComposer.show(subject: .supportRequest, parent: self, popoverAnchor: popoverAnchor)
         case rateTheAppCell:
-            AppStoreHelper.writeReview()
+            break
         case aboutAppCell:
             let aboutVC = AboutVC.make()
             show(aboutVC, sender: self)
@@ -240,16 +190,6 @@ class SettingsVC: UITableViewController, Refreshable {
         _ tableView: UITableView,
         accessoryButtonTappedForRowWith indexPath: IndexPath)
     {
-        guard let cell = tableView.cellForRow(at: indexPath) else { return }
-        switch cell {
-#if DEBUG
-        case premiumStatusCell, premiumTrialCell:
-            didPressUpgradeToPremium()
-            refreshPremiumStatus()
-#endif
-        default:
-            assertionFailure() 
-        }
     }
     
 
@@ -258,11 +198,7 @@ class SettingsVC: UITableViewController, Refreshable {
             return super.tableView(tableView, titleForFooterInSection: section)
         }
         
-        if !isPremiumSectionHidden && PremiumManager.shared.usageMonitor.isEnabled {
-            return getAppUsageDescription()
-        } else {
-            return nil
-        }
+        return nil
     }
     
     @IBAction func doneButtonTapped(_ sender: Any) {
@@ -280,16 +216,6 @@ class SettingsVC: UITableViewController, Refreshable {
         router.push(appearanceVC, animated: true, onPop: nil)
     }
     
-    var appHistoryCoordinator: AppHistoryCoordinator?
-    func didPressShowAppHistory() {
-        assert(appHistoryCoordinator == nil)
-        appHistoryCoordinator = AppHistoryCoordinator(router: router)
-        appHistoryCoordinator!.dismissHandler = { [weak self] coordinator in
-            self?.appHistoryCoordinator = nil
-        }
-        appHistoryCoordinator!.start()
-    }
-    
     var diagnosticsViewerCoordinator: DiagnosticsViewerCoordinator?
     func didPressShowDiagnostics() {
         assert(diagnosticsViewerCoordinator == nil)
@@ -300,164 +226,6 @@ class SettingsVC: UITableViewController, Refreshable {
         diagnosticsViewerCoordinator!.start()
     }
     
-    
-    private var premiumCoordinator: PremiumCoordinator? 
-    func didPressUpgradeToPremium() {
-        assert(premiumCoordinator == nil)
-        let modalRouter = NavigationRouter.createModal(
-            style: PremiumCoordinator.desiredModalPresentationStyle)
-        premiumCoordinator = PremiumCoordinator(router: modalRouter)
-        premiumCoordinator!.dismissHandler = { [weak self] (coordinator) in
-            self?.premiumCoordinator = nil
-        }
-        premiumCoordinator!.start()
-        present(modalRouter, animated: true, completion: nil)
-    }
-    
-    func didPressManageSubscription() {
-        AppStoreHelper.openSubscriptionManagement()
-    }
-    
-    
-    #if DEBUG
-    private let premiumRefreshInterval = 1.0
-    #else
-    private let premiumRefreshInterval = 10.0
-    #endif
-    
-    @objc private func refreshPremiumStatus() {
-        guard BusinessModel.type != .prepaid else { return }
-        
-        let premiumManager = PremiumManager.shared
-        premiumManager.usageMonitor.refresh()
-        premiumManager.updateStatus()
-        switch premiumManager.status {
-        case .initialGracePeriod:
-            setPremiumCellVisibility(premiumTrialCell, isHidden: false)
-            setPremiumCellVisibility(premiumStatusCell, isHidden: true)
-            setPremiumCellVisibility(manageSubscriptionCell, isHidden: true)
-            
-            if Settings.current.isTestEnvironment {
-                let secondsLeft = premiumManager.gracePeriodSecondsRemaining
-                let timeFormatted = DateComponentsFormatter.format(
-                    secondsLeft,
-                    allowedUnits: [.day, .hour, .minute, .second],
-                    maxUnitCount: 2) ?? "?"
-                Diag.debug("Initial setup period: \(timeFormatted) remaining")
-            }
-            premiumTrialCell.detailTextLabel?.text = nil
-        case .subscribed:
-            guard let expiryDate = premiumManager.getPremiumExpiryDate() else {
-                assertionFailure()
-                Diag.error("Subscribed, but no expiry date?")
-                premiumStatusCell.detailTextLabel?.text = "?"
-                return
-            }
-            guard let product = premiumManager.getPremiumProduct() else {
-                assertionFailure()
-                Diag.error("Subscribed, but no product info?")
-                premiumStatusCell.detailTextLabel?.text = "?"
-                return
-            }
-            
-            setPremiumCellVisibility(premiumTrialCell, isHidden: true)
-            setPremiumCellVisibility(premiumStatusCell, isHidden: false)
-            setPremiumCellVisibility(manageSubscriptionCell, isHidden: !product.isSubscription)
-            
-            if expiryDate == .distantFuture {
-                if Settings.current.isTestEnvironment {
-                    premiumStatusCell.detailTextLabel?.text = NSLocalizedString(
-                        "[Premium/status] Beta testing",
-                        value: "Beta testing",
-                        comment: "Status: special premium for beta-testing environment is active")
-                } else {
-                    premiumStatusCell.detailTextLabel?.text = NSLocalizedString(
-                        "[Premium/status] Valid forever",
-                        value: "Valid forever",
-                        comment: "Status: validity period of once-and-forever premium")
-                }
-            } else {
-                #if DEBUG
-                let expiryDateString = DateFormatter
-                    .localizedString(from: expiryDate, dateStyle: .medium, timeStyle: .short)
-                #else
-                let expiryDateString = DateFormatter
-                    .localizedString(from: expiryDate, dateStyle: .medium, timeStyle: .none)
-                #endif
-                premiumStatusCell.detailTextLabel?.text = String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "[Premium/status] Next renewal on %@",
-                        value: "Next renewal on %@",
-                        comment: "Status: scheduled renewal date of a premium subscription. For example: `Next renewal on 1 Jan 2050`. [expiryDateString: String]"),
-                    expiryDateString)
-            }
-        case .lapsed:
-            setPremiumCellVisibility(premiumTrialCell, isHidden: false)
-            setPremiumCellVisibility(premiumStatusCell, isHidden: false)
-            setPremiumCellVisibility(manageSubscriptionCell, isHidden: false)
-            
-            let premiumStatusText: String
-            if let secondsSinceExpiration = premiumManager.secondsSinceExpiration {
-                let timeFormatted = DateComponentsFormatter.format(
-                    secondsSinceExpiration,
-                    allowedUnits: [.day, .hour, .minute],
-                    maxUnitCount: 1) ?? "?"
-                premiumStatusText = String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "[Premium/status] Expired %@ ago. Please renew.",
-                        value: "Expired %@ ago. Please renew.",
-                        comment: "Status: premium subscription has expired. For example: `Expired 1 day ago`. [timeFormatted: String, includes the time unit (day, hour, minute)]"),
-                    timeFormatted)
-            } else {
-                assertionFailure()
-                premiumStatusText = "?"
-            }
-            premiumTrialCell.detailTextLabel?.text = ""
-            premiumStatusCell.detailTextLabel?.text = premiumStatusText
-            premiumStatusCell.detailTextLabel?.textColor = .errorMessage
-        case .freeLightUse,
-             .freeHeavyUse:
-            setPremiumCellVisibility(premiumTrialCell, isHidden: false)
-            setPremiumCellVisibility(premiumStatusCell, isHidden: true)
-            setPremiumCellVisibility(manageSubscriptionCell, isHidden: true)
-            premiumTrialCell.detailTextLabel?.text = nil
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            self?.tableView.reloadData()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + premiumRefreshInterval) {
-            [weak self] in
-            self?.refreshPremiumStatus()
-        }
-    }
-    
-    private func getAppUsageDescription() -> String? {
-        let usageMonitor = PremiumManager.shared.usageMonitor
-        let monthlyUseDuration = usageMonitor.getAppUsageDuration(.perMonth)
-        let annualUseDuration = 12 * monthlyUseDuration
-        
-        guard monthlyUseDuration > 5 * 60.0 else { return nil }
-        guard let monthlyUsage = DateComponentsFormatter.format(
-                monthlyUseDuration,
-                allowedUnits: [.hour, .minute],
-                maxUnitCount: 1,
-                style: .full),
-            let annualUsage = DateComponentsFormatter.format(
-                annualUseDuration,
-                allowedUnits: [.hour, .minute],
-                maxUnitCount: 1,
-                style: .full)
-            else { return nil}
-        let appUsageDescription = String.localizedStringWithFormat(
-            NSLocalizedString(
-                "[Premium/usage] App being useful: %@/month, that is around %@/year.",
-                value: "App being useful: %@/month, that is around %@/year.",
-                comment: "Status: how long the app has been used during some time period. For example: `App being useful: 1hr/month, about 12hr/year`. [monthlyUsage: String, annualUsage: String — already include the time unit (hours, minutes)]"),
-            monthlyUsage,
-            annualUsage)
-        return appUsageDescription
-    }
 }
 
 extension SettingsVC: SettingsObserver {

@@ -52,7 +52,14 @@ class WelcomeVC: UIViewController {
     }
     
     @IBAction func didPressCreateDatabase(_ sender: Any) {
-        delegate?.didPressCreateDatabase(in: self)
+        let alert = UIAlertController.make(
+            title: LString.titleCreateDatabase,
+            message: NSLocalizedString(
+                "[Welcome/CreateDatabase/ReadOnly] Creating databases is unavailable in this read-only version. Add an existing database to Documents instead.",
+                value: "Creating databases is unavailable in this read-only version. Add an existing database to Documents instead.",
+                comment: "Message shown when trying to create a database in the read-only iOS 9 backport"),
+            dismissButtonTitle: LString.actionOK)
+        present(alert, animated: true, completion: nil)
     }
     
     @IBAction func didPressOpenDatabase(_ sender: Any) {

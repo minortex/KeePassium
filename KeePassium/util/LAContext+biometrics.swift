@@ -9,16 +9,21 @@
 import LocalAuthentication
 import UIKit
 
+enum KPBiometryType {
+    case touchID
+    case none
+}
+
 extension LAContext {
-    public static func getBiometryType() -> LABiometryType {
+    public static func getBiometryType() -> KPBiometryType {
         let context = LAContext()
         let policy = LAPolicy.deviceOwnerAuthenticationWithBiometrics
-        context.canEvaluatePolicy(policy, error: nil)
-        return context.biometryType
+        let isAvailable = context.canEvaluatePolicy(policy, error: nil)
+        return isAvailable ? .touchID : .none
     }
 }
 
-extension LABiometryType {
+extension KPBiometryType {
     var name: String? {
         switch self {
         case .touchID:
@@ -26,23 +31,16 @@ extension LABiometryType {
                 "[BiometricAuthType] Touch ID",
                 value: "Touch ID",
                 comment: "Name of biometric authentication method. Trademarked, do not translate unless Apple traslated it to your language.")
-        case .faceID:
-            return NSLocalizedString(
-                "[BiometricAuthType] Face ID",
-                value: "Face ID",
-                comment: "Name of biometric authentication method. Trademarked, do not translate unless Apple traslated it to your language.")
-        default:
+        case .none:
             return nil
         }
     }
     
     var icon: UIImage? {
         switch self {
-        case .faceID:
-            return UIImage(asset: .biometryFaceIDListitem)
         case .touchID:
             return UIImage(asset: .biometryTouchIDListitem)
-        default:
+        case .none:
             return nil
         }
     }

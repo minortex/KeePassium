@@ -28,17 +28,6 @@ struct ContextualAction {
         return UIImage.get(imageName)
     }
 
-    @available(iOS 13, *)
-    public func toMenuAction() -> UIAction {
-        return UIAction(
-            title: title,
-            image: image,
-            handler: { action in
-                handler()
-            }
-        )
-    }
-    
     public func toAlertAction() -> UIAlertAction {
         let alertActionStyle: UIAlertAction.Style
         switch style {
@@ -59,31 +48,4 @@ struct ContextualAction {
         )
     }
     
-    public func toContextualAction(tableView: UITableView) -> UIContextualAction {
-        let contextualAction: UIContextualAction
-        switch style {
-        case .default, .cancel:
-            contextualAction = UIContextualAction(style: .normal, title: title) {
-                [weak tableView] (action, sourceView, completion) in
-                tableView?.setEditing(false, animated: true)
-                handler()
-                completion(true)
-            }
-        case .destructive:
-            contextualAction = UIContextualAction(style: .destructive, title: title) {
-                [weak tableView] (action, sourceView, completion) in
-                tableView?.setEditing(false, animated: true)
-                handler()
-                if #available(iOS 13, *) {
-                    completion(true)
-                } else {
-                    completion(false) 
-                }
-            }
-
-        }
-        contextualAction.image = image
-        contextualAction.backgroundColor = color
-        return contextualAction
-    }
 }

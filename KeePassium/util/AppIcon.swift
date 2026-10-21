@@ -65,16 +65,12 @@ extension AppIcon {
     }
     
     public static var current: UIImage? {
-        if let key = UIApplication.shared.alternateIconName,
+        if #available(iOS 10.3, *),
+            let key = UIApplication.shared.alternateIconName,
             let icon = AppIcon.all.first(where: { $0.key == key })
         {
             return UIImage(named: icon.asset)
         }
-        switch BusinessModel.type {
-        case .freemium:
-            return UIImage(named: AppIcon.atomBlue.asset)
-        case .prepaid:
-            return UIImage(named: AppIcon.atomBlack.asset)
-        }
+        return UIImage(named: AppIcon.atomBlue.asset)
     }
 }

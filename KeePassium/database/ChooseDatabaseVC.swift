@@ -19,7 +19,7 @@ class AppLockSetupCell: UITableViewCell {
     @IBOutlet weak var dismissButton: UIButton!
 
     weak var delegate: AppLockSetupCellDelegate?
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
         dismissButton.accessibilityLabel = LString.actionDismiss
@@ -42,7 +42,6 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
         case noFiles = "NoFilesCell"
         case appLockSetup = "AppLockSetupCell"
     }
-    @IBOutlet weak var addDatabaseBarButton: UIBarButtonItem!
     @IBOutlet weak var sortOrderButton: UIBarButtonItem!
     
     private var _isEnabled = true
@@ -71,8 +70,6 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
     private var settingsNotifications: SettingsNotifications!
     
     private let fileInfoReloader = FileInfoReloader()
-    
-    private let premiumUpgradeHelper = PremiumUpgradeHelper()
     
     private var isJustLaunched = true
     
@@ -270,113 +267,71 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
     }
     
     @IBAction func didPressAddDatabase(_ sender: Any) {
-        let existingNonBackupDatabaseRefs = databaseRefs.filter {
-            ($0.location != .internalBackup) && 
-                !($0.hasPermissionError257 || $0.hasFileMissingError) 
-        }
-        if existingNonBackupDatabaseRefs.count > 0 {
-            premiumUpgradeHelper.performActionOrOfferUpgrade(.canUseMultipleDatabases, in: self) {
-                [weak self] in
-                self?.handleDidPressAddDatabase()
-            }
-        } else {
-            handleDidPressAddDatabase()
-        }
+        didPressOpenDatabase(from: sender)
     }
-    
-    private func handleDidPressAddDatabase() {
-        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        
-        actionSheet.addAction(UIAlertAction(title: LString.actionOpenDatabase, style: .default) {
-            [weak self] _ in
-            self?.didPressOpenDatabase()
-        })
-        
-        actionSheet.addAction(UIAlertAction(title: LString.actionCreateDatabase, style: .default) {
-            [weak self] _ in
-            self?.didPressCreateDatabase()
-        })
-        
-        actionSheet.addAction(UIAlertAction(
-            title: LString.actionCancel,
-            style: .cancel,
-            handler: nil)
-        )
-            
-        if let popover = actionSheet.popoverPresentationController {
-            popover.barButtonItem = addDatabaseBarButton
-        }
-        present(actionSheet, animated: true, completion: nil)
-    }
-    
+
     func didPressOpenDatabase() {
-        let picker = UIDocumentPickerViewController(
-            documentTypes: FileType.databaseUTIs,
-            in: .open)
-        picker.delegate = self
-        picker.modalPresentationStyle = .pageSheet
-        present(picker, animated: true, completion: nil)
+        didPressOpenDatabase(from: nil)
+    }
+
+    private func didPressOpenDatabase(from sender: Any?) {
+        let menu = UIAlertController(
+            title: LString.actionOpenDatabase,
+            message: nil,
+            preferredStyle: .actionSheet)
+        menu.addAction(title: "WebDAV", style: .default) { [weak self] _ in
+            self?.didPressAddWebDAVDatabase()
+        }
+        menu.addAction(title: "Local Database", style: .default) { [weak self] _ in
+            self?.showLocalDatabaseInstructions()
+        }
+        menu.addAction(title: LString.actionCancel, style: .cancel, handler: nil)
+        if let barButton = sender as? UIBarButtonItem {
+            menu.popoverPresentationController?.barButtonItem = barButton
+        } else if let popover = menu.popoverPresentationController {
+            popover.sourceView = view
+            popover.sourceRect = CGRect(
+                x: view.bounds.midX,
+                y: view.bounds.midY,
+                width: 1,
+                height: 1)
+        }
+        present(menu, animated: true, completion: nil)
+    }
+
+    private func didPressAddWebDAVDatabase() {
+        let setupVC = WebDAVSetupVC.make { [weak self] in
+            self?.refresh()
+        }
+        present(setupVC, animated: true, completion: nil)
+    }
+
+    private func showLocalDatabaseInstructions() {
+        let alert = UIAlertController.make(
+            title: LString.actionOpenDatabase,
+            message: NSLocalizedString(
+                "[ChooseDatabase/Import/Unavailable] Copy a database into KeePassium Documents with iTunes File Sharing or Finder, then reopen the app.",
+                value: "Copy a database into KeePassium Documents with iTunes File Sharing or Finder, then reopen the app.",
+                comment: "Instructions for importing a database in the iOS 9 read-only backport"),
+            dismissButtonTitle: LString.actionOK)
+        present(alert, animated: true, completion: nil)
     }
     
-    var databaseCreatorCoordinator: DatabaseCreatorCoordinator?
     func didPressCreateDatabase() {
-        assert(databaseCreatorCoordinator == nil)
-        
-        let modalRouter = NavigationRouter.createModal(style: .formSheet)
-        databaseCreatorCoordinator = DatabaseCreatorCoordinator(router: modalRouter)
-        databaseCreatorCoordinator!.delegate = self
-        databaseCreatorCoordinator?.dismissHandler = { [weak self] coordinator in
-            self?.databaseCreatorCoordinator = nil
-        }
-        databaseCreatorCoordinator!.start()
-        present(modalRouter, animated: true, completion: nil)
+        let alert = UIAlertController.make(
+            title: LString.titleCreateDatabase,
+            message: NSLocalizedString(
+                "[ChooseDatabase/Create/ReadOnly] Creating databases is unavailable in this read-only version.",
+                value: "Creating databases is unavailable in this read-only version.",
+                comment: "Message shown when trying to create a database in the read-only iOS 9 backport"),
+            dismissButtonTitle: LString.actionOK)
+        present(alert, animated: true, completion: nil)
     }
 
     func didPressExportDatabase(at indexPath: IndexPath) {
         let urlRef = databaseRefs[indexPath.row]
         let popoverAnchor = PopoverAnchor(tableView: tableView, at: indexPath)
         FileExportHelper.showFileExportSheet(urlRef, at: popoverAnchor, parent: self)
-    }
-        
-    func didPressDeleteDatabase(at indexPath: IndexPath) {
-        StoreReviewSuggester.registerEvent(.trouble)
-        
-        let urlRef = databaseRefs[indexPath.row]
-        if urlRef.hasError {
-            removeDatabaseFile(urlRef: urlRef)
-            return
-        }
-        
-        let message: String
-        let destructiveAction: UIAlertAction
-        if urlRef.location.isInternal {
-            message = LString.confirmDatabaseDeletion
-            destructiveAction = UIAlertAction(
-                title: LString.actionDeleteFile,
-                style: .destructive)
-            {
-                [unowned self] _ in
-                
-                Settings.current.startupDatabase = nil
-                self.updateDetailView(onlyInTwoPaneMode: true)
-                self.deleteDatabaseFile(urlRef: urlRef)
-            }
-        } else {
-            message = LString.confirmDatabaseRemoval
-            destructiveAction = UIAlertAction(title: LString.actionRemoveFile, style: .destructive)
-            {
-                [unowned self] _ in
-                Settings.current.startupDatabase = nil
-                self.updateDetailView(onlyInTwoPaneMode: true)
-                self.removeDatabaseFile(urlRef: urlRef)
-            }
-        }
-        let confirmationAlert = UIAlertController.make(
-            title: urlRef.visibleFileName,
-            message: message,
-            dismissButtonTitle: LString.actionCancel)
-        confirmationAlert.addAction(destructiveAction)
-        present(confirmationAlert, animated: true, completion: nil)
     }
     
     private func didSelectDatabase(urlRef: URLReference) {
@@ -392,32 +347,6 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
     }
 
 
-    private func deleteDatabaseFile(urlRef: URLReference) {
-        if urlRef == Settings.current.startupDatabase {
-            Settings.current.startupDatabase = nil
-        }
-
-        do {
-            try FileKeeper.shared.deleteFile(
-                urlRef,
-                fileType: .database,
-                ignoreErrors: urlRef.hasError)
-            refresh()
-        } catch {
-            Diag.error("Failed to delete database file [reason: \(error.localizedDescription)]")
-            showErrorAlert(error)
-        }
-        DatabaseSettingsManager.shared.removeSettings(for: urlRef, onlyIfUnused: true)
-    }
-    
-    private func removeDatabaseFile(urlRef: URLReference) {
-        if urlRef == Settings.current.startupDatabase {
-            Settings.current.startupDatabase = nil
-        }
-        FileKeeper.shared.removeExternalReference(urlRef, fileType: .database)
-        DatabaseSettingsManager.shared.removeSettings(for: urlRef, onlyIfUnused: true)
-    }
-    
     private func processPendingFileOperations() {
         FileKeeper.shared.processPendingOperations(
             success: nil,
@@ -513,15 +442,7 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
             assertionFailure()
             return
         }
-        let urlRef = databaseRefs[indexPath.row]
-        let popoverAnchor = PopoverAnchor(tableView: tableView, at: indexPath)
-        let databaseInfoVC = FileInfoVC.make(urlRef: urlRef, fileType: .database, at: popoverAnchor)
-        databaseInfoVC.canExport = true
-        databaseInfoVC.didDeleteCallback = { [weak self, weak databaseInfoVC] in
-            self?.refresh()
-            databaseInfoVC?.dismiss(animated: true, completion: nil)
-        }
-        present(databaseInfoVC, animated: true, completion: nil)
+        didPressExportDatabase(at: indexPath)
     }
     
        
@@ -530,10 +451,9 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
         forSwipe: Bool
     ) -> [ContextualAction] {
         let cellType = getCellType(for: indexPath)
-        let isEditableRow = cellType == .fileItem
-        guard isEditableRow else { return [] }
+        let isFileRow = cellType == .fileItem
+        guard isFileRow else { return [] }
 
-        let urlRef = databaseRefs[indexPath.row]
         let exportAction = ContextualAction(
             title: LString.actionExport,
             imageName: .squareAndArrowUp,
@@ -543,19 +463,7 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
                 self?.didPressExportDatabase(at: indexPath)
             }
         )
-        
-        let destructiveActionTitle = DestructiveFileAction.get(for: urlRef.location).title
-        let destructiveAction = ContextualAction(
-            title: destructiveActionTitle,
-            imageName: .trash,
-            style: .destructive,
-            color: UIColor.destructiveTint,
-            handler: { [weak self, indexPath] in
-                self?.didPressDeleteDatabase(at: indexPath)
-            }
-        )
-        
-        return [exportAction, destructiveAction]
+        return [exportAction]
     }
 }
 
@@ -588,48 +496,6 @@ extension ChooseDatabaseVC: FileKeeperObserver {
         if isViewLoaded {
             processPendingFileOperations()
         }
-    }
-}
-
-extension ChooseDatabaseVC: UIDocumentPickerDelegate {
-    func documentPicker(
-        _ controller: UIDocumentPickerViewController,
-        didPickDocumentsAt urls: [URL])
-    {
-        guard let url = urls.first else { return }
-        FileAddingHelper.ensureDatabaseFile(url: url, parent: self) { [weak self] (url) in
-            guard let self = self else { return }
-            switch controller.documentPickerMode {
-            case .open:
-                FileKeeper.shared.prepareToAddFile(url: url, fileType: .database, mode: .openInPlace)
-            case .import:
-                FileKeeper.shared.prepareToAddFile(url: url, fileType: .database, mode: .import)
-            default:
-                assertionFailure("Unexpected document picker mode")
-            }
-            self.processPendingFileOperations()
-            self.navigationController?.popToViewController(self, animated: true) 
-        }
-    }
-}
-
-extension ChooseDatabaseVC: DatabaseCreatorCoordinatorDelegate {
-    func didPressCancel(in databaseCreatorCoordinator: DatabaseCreatorCoordinator) {
-        presentedViewController?.dismiss(animated: true) { 
-            self.databaseCreatorCoordinator = nil
-        }
-    }
-    
-    func didCreateDatabase(
-        in databaseCreatorCoordinator: DatabaseCreatorCoordinator,
-        database urlRef: URLReference)
-    {
-        presentedViewController?.dismiss(animated: true) { 
-            self.databaseCreatorCoordinator = nil
-        }
-        navigationController?.popToViewController(self, animated: true) 
-        Settings.current.startupDatabase = urlRef
-        updateDetailView(onlyInTwoPaneMode: false)
     }
 }
 

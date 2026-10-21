@@ -20,7 +20,6 @@ extension UIViewController {
             message: message)
         present(alert, animated: true, completion: nil)
         
-        StoreReviewSuggester.registerEvent(.trouble)
     }
     
     func showNotification(

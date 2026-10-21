@@ -12,12 +12,9 @@ class AppIconSwitcherCoordinator: Coordinator {
     var childCoordinators = [Coordinator]()
     var dismissHandler: CoordinatorDismissHandler?
     
-    private let router: NavigationRouter
     private let picker: AppIconPicker
-    private let premiumUpgradeHelper = PremiumUpgradeHelper()
     
     init(router: NavigationRouter) {
-        self.router = router
         picker = AppIconPicker.instantiateFromStoryboard()
         picker.delegate = self
     }
@@ -28,38 +25,20 @@ class AppIconSwitcherCoordinator: Coordinator {
     }
     
     func start() {
-        router.push(picker, animated: true, onPop: {
-            [weak self] (viewController) in
-            guard let self = self else { return }
-            self.removeAllChildCoordinators()
-            self.dismissHandler?(self)
-        })
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(refreshPremiumStatus),
-            name: PremiumManager.statusUpdateNotification,
-            object: nil)
-    }
-    
-    @objc private func refreshPremiumStatus() {
-        picker.refresh()
+        dismissHandler?(self)
     }
 }
 
 extension AppIconSwitcherCoordinator: AppIconPickerDelegate {
     func didSelectIcon(_ appIcon: AppIcon, in appIconPicker: AppIconPicker) {
-        assert(UIApplication.shared.supportsAlternateIcons)
-        if AppIcon.isPremium(appIcon) {
-            premiumUpgradeHelper.performActionOrOfferUpgrade(.canChangeAppIcon, in: picker) {
-                [weak self] in
-                self?.setAppIcon(appIcon)
-            }
-        } else {
-            setAppIcon(appIcon)
+        guard #available(iOS 10.3, *), UIApplication.shared.supportsAlternateIcons else {
+            return
         }
+        setAppIcon(appIcon)
     }
     
     private func setAppIcon(_ appIcon: AppIcon) {
+        guard #available(iOS 10.3, *) else { return }
         UIApplication.shared.setAlternateIconName(appIcon.key) { [weak self] error in
             if let error = error {
                 Diag.error("Failed to switch app icon [message: \(error.localizedDescription)")

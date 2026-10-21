@@ -20,6 +20,16 @@ public enum FileAccessError: LocalizedError {
     case fileProviderNotFound(fileProvider: FileProvider?)
     
     case targetFileIsReadOnly(fileProvider: FileProvider)
+
+    case authenticationFailed(message: String)
+
+    case fileNotFound(message: String)
+
+    case certificateError(message: String)
+
+    case serverSideError(statusCode: Int, message: String)
+
+    case networkError(message: String)
     
     case systemError(_ originalError: Error?)
     
@@ -71,6 +81,12 @@ public enum FileAccessError: LocalizedError {
         case .fileProviderNotFound(let fileProvider):
             if let fileProvider = fileProvider {
                 switch fileProvider {
+                case .keepassiumWebDAV:
+                    return NSLocalizedString(
+                        "[FileAccessError/FileProvider/NotFound/webDAV]",
+                        bundle: Bundle.framework,
+                        value: "The WebDAV server is not available.",
+                        comment: "Error message: remote WebDAV server cannot be reached.")
                 case .smbShare:
                     return NSLocalizedString(
                             "[FileAccessError/FileProvider/NotFound/smbShare]",
@@ -109,6 +125,16 @@ public enum FileAccessError: LocalizedError {
                     comment: "Error message: file provider does not support write operations. For example: `Cannot save file (OneDrive)`"),
                 fileProvider.localizedName
             )
+        case .authenticationFailed(let message):
+            return message
+        case .fileNotFound(let message):
+            return message
+        case .certificateError(let message):
+            return message
+        case .serverSideError(_, let message):
+            return message
+        case .networkError(let message):
+            return message
         case .systemError(let originalError):
             return originalError?.localizedDescription
         }
@@ -117,6 +143,9 @@ public enum FileAccessError: LocalizedError {
     public var failureReason: String? {
         switch self {
         case .targetFileIsReadOnly(let fileProvider):
+            if fileProvider == .keepassiumWebDAV {
+                return nil
+            }
             if fileProvider == .oneDrive {
                 return NSLocalizedString(
                     "[FileAccessError/OneDriveReadOnly/reason]",
@@ -181,6 +210,43 @@ public enum FileAccessError: LocalizedError {
             return originalError
         default:
             return nil
+        }
+    }
+
+    internal var allowsCachedRemoteFallback: Bool {
+        switch self {
+        case .timeout(_), .fileProviderDoesNotRespond(_), .fileProviderNotFound(_), .networkError(_):
+            return true
+        case .serverSideError(let statusCode, _):
+            return statusCode == 408 || statusCode >= 500
+        case .systemError(let originalError):
+            return FileAccessError.isTransientNetworkError(originalError)
+        case .noInfoAvailable,
+             .internalError,
+             .targetFileIsReadOnly,
+             .authenticationFailed,
+             .fileNotFound,
+             .certificateError:
+            return false
+        }
+    }
+
+    private static func isTransientNetworkError(_ error: Error?) -> Bool {
+        guard let nsError = error as NSError?,
+              nsError.domain == NSURLErrorDomain else {
+            return false
+        }
+        switch nsError.code {
+        case NSURLErrorTimedOut,
+             NSURLErrorCannotFindHost,
+             NSURLErrorCannotConnectToHost,
+             NSURLErrorNetworkConnectionLost,
+             NSURLErrorDNSLookupFailed,
+             NSURLErrorNotConnectedToInternet,
+             NSURLErrorResourceUnavailable:
+            return true
+        default:
+            return false
         }
     }
 }

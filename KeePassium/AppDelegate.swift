@@ -36,24 +36,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
         ) -> Bool
     {
-        #if PREPAID_VERSION
-        BusinessModel.type = .prepaid
-        #else
-        BusinessModel.type = .freemium
-        #endif
         AppGroup.applicationShared = application
         SettingsMigrator.processAppLaunch(with: Settings.current)
         SystemIssueDetector.scanForIssues()
         Diag.info(AppInfo.description)
-        PremiumManager.shared.startObservingTransactions()
         
-        if #available(iOS 13, *) {
-            let args = ProcessInfo.processInfo.arguments
-            if args.contains("darkMode") {
-                window?.overrideUserInterfaceStyle = .dark
-            }
-        }
-
         let rootVC = window?.rootViewController as? FileKeeperDelegate
         assert(rootVC != nil, "FileKeeper needs a delegate")
         FileKeeper.shared.delegate = rootVC
@@ -61,12 +48,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         showAppCoverScreen()
         
         watchdog.didBecomeActive()
-        StoreReviewSuggester.registerEvent(.sessionStart)
         return true
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
-        PremiumManager.shared.finishObservingTransactions()
     }
     
     func application(
@@ -76,20 +61,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ) -> Bool
     {
         AppGroup.applicationShared = application
-        let isOpenInPlace = (options[.openInPlace] as? Bool) ?? false
-
-        Diag.info("Opened with URL: \(inputURL.redacted) [inPlace: \(isOpenInPlace)]")
-        
-        DatabaseManager.shared.closeDatabase(clearStoredKey: false, ignoreErrors: true) {
-            (fileAccessError) in
-            if inputURL.scheme != AppGroup.appURLScheme {
-                FileKeeper.shared.prepareToAddFile(
-                    url: inputURL,
-                    fileType: nil, 
-                    mode: isOpenInPlace ? .openInPlace : .import)
-            }
+        guard inputURL.scheme == AppGroup.appURLScheme else {
+            Diag.info("Ignored external URL: \(inputURL.redacted)")
+            return false
         }
-        
+        Diag.info("Received internal app URL: \(inputURL.redacted)")
         return true
     }
     
@@ -105,14 +81,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     @objc
     func showHelp(_ sender: Any) {
-        UIApplication.shared.open(helpURL, options: [:], completionHandler: nil)
-    }
-
-    @available(iOS 13, *)
-    override func buildMenu(with builder: UIMenuBuilder) {
-        builder.remove(menu: .file)
-        builder.remove(menu: .edit)
-        builder.remove(menu: .format)
+        UIApplication.shared.kp_open(helpURL)
     }
 }
 
@@ -141,7 +110,7 @@ extension AppDelegate: WatchdogDelegate {
         
         let _appCoverWindow = UIWindow(frame: UIScreen.main.bounds)
         _appCoverWindow.setScreen(UIScreen.main)
-        _appCoverWindow.windowLevel = UIWindow.Level.alert
+        _appCoverWindow.windowLevel = UIWindowLevelAlert
         self.appCoverWindow = _appCoverWindow
 
         let coverVC = AppCoverVC.make()
@@ -164,7 +133,7 @@ extension AppDelegate: WatchdogDelegate {
     }
     
     private var canUseBiometrics: Bool {
-        return isBiometricsAvailable() && Settings.current.premiumIsBiometricAppLockEnabled
+        return isBiometricsAvailable() && Settings.current.isBiometricAppLockEnabled
     }
     
     private func showAppLockScreen() {
@@ -194,7 +163,7 @@ extension AppDelegate: WatchdogDelegate {
         
         let _appLockWindow = UIWindow(frame: UIScreen.main.bounds)
         _appLockWindow.setScreen(UIScreen.main)
-        _appLockWindow.windowLevel = UIWindow.Level.alert
+        _appLockWindow.windowLevel = UIWindowLevelAlert
         UIView.performWithoutAnimation { [weak self] in
             _appLockWindow.rootViewController = passcodeInputVC
             _appLockWindow.makeKeyAndVisible()
@@ -215,10 +184,10 @@ extension AppDelegate: WatchdogDelegate {
     
     private func performBiometricUnlock() {
         assert(isBiometricsAvailable())
-        guard Settings.current.premiumIsBiometricAppLockEnabled else { return }
+        guard Settings.current.isBiometricAppLockEnabled else { return }
         guard !isBiometricAuthShown else { return }
         
-        let timeSinceLastSuccess = abs(Date.now.timeIntervalSince(lastSuccessfulBiometricAuthTime))
+        let timeSinceLastSuccess = abs(Date().timeIntervalSince(lastSuccessfulBiometricAuthTime))
         if timeSinceLastSuccess < biometricAuthReuseDuration {
             print("Skipping repeated biometric prompt")
             watchdog.unlockApp()
@@ -228,7 +197,9 @@ extension AppDelegate: WatchdogDelegate {
         let context = LAContext()
         let policy = LAPolicy.deviceOwnerAuthenticationWithBiometrics
         context.localizedFallbackTitle = "" // hide "Enter (System) Password" fallback; nil won't work
-        context.localizedCancelTitle = LString.actionUsePasscode
+        if #available(iOS 10, *) {
+            context.localizedCancelTitle = LString.actionUsePasscode
+        }
         print("Showing biometrics request")
         
         showBiometricsBackground()
@@ -237,7 +208,7 @@ extension AppDelegate: WatchdogDelegate {
             [weak self] (authSuccessful, authError) in
             DispatchQueue.main.async { [weak self] in
                 if authSuccessful {
-                    self?.lastSuccessfulBiometricAuthTime = Date.now
+                    self?.lastSuccessfulBiometricAuthTime = Date()
                     self?.watchdog.unlockApp()
                 } else {
                     Diag.warning("TouchID failed [message: \(authError?.localizedDescription ?? "nil")]")
@@ -256,7 +227,7 @@ extension AppDelegate: WatchdogDelegate {
         
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.setScreen(UIScreen.main)
-        window.windowLevel = UIWindow.Level.alert + 1 
+        window.windowLevel = UIWindowLevelAlert + 1
         let coverVC = AppCoverVC.make()
         
         UIView.performWithoutAnimation {
@@ -287,7 +258,6 @@ extension AppDelegate: PasscodeInputDelegate {
             } else {
                 HapticFeedback.play(.wrongPassword)
                 sender.animateWrongPassccode()
-                StoreReviewSuggester.registerEvent(.trouble)
                 if Settings.current.isLockAllDatabasesOnFailedPasscode {
                     DatabaseSettingsManager.shared.eraseAllMasterKeys()
                     DatabaseManager.shared.closeDatabase(

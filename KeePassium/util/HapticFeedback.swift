@@ -23,6 +23,7 @@ class HapticFeedback {
     
     static func play(_ kind: Kind) {
         guard Settings.current.isHapticFeedbackEnabled else { return }
+        guard #available(iOS 10, *) else { return }
         
         switch kind {
         case .appUnlocked, .databaseUnlocked, .contextMenuOpened:
@@ -47,4 +48,3 @@ class HapticFeedback {
     }
     
 }
-

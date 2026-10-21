@@ -18,32 +18,17 @@ class SettingsDatabaseTimeoutCell: UITableViewCell {
 }
 
 class SettingsDatabaseTimeoutVC: UITableViewController, Refreshable {
-    private var premiumUpgradeHelper = PremiumUpgradeHelper()
-    private var premiumStatus: PremiumManager.Status = .initialGracePeriod
-    
     public static func make() -> UIViewController {
         return SettingsDatabaseTimeoutVC.instantiateFromStoryboard()
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(refreshPremiumStatus),
-            name: PremiumManager.statusUpdateNotification,
-            object: nil)
-        refreshPremiumStatus()
     }
     
     func refresh() {
         tableView.reloadData()
     }
-
-    @objc func refreshPremiumStatus() {
-        premiumStatus = PremiumManager.shared.status
-        refresh()
-    }
-    
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
@@ -75,14 +60,10 @@ class SettingsDatabaseTimeoutVC: UITableViewController, Refreshable {
         let timeout = Settings.DatabaseLockTimeout.allValues[indexPath.row]
         cell.titleLabel?.text = timeout.fullTitle
         cell.detailLabel?.text = timeout.description
-        let settings = Settings.current
-        let isAvailable = settings.isShownAvailable(timeout: timeout, for: premiumStatus)
-        cell.premiumBadge.isHidden = isAvailable
-        cell.accessibilityLabel = AccessibilityHelper.decorateAccessibilityLabel(
-            premiumFeature: cell.titleLabel?.text,
-            isEnabled: isAvailable)
+        cell.premiumBadge.isHidden = true
+        cell.accessibilityLabel = cell.titleLabel?.text
         
-        if timeout == settings.premiumDatabaseLockTimeout {
+        if timeout == Settings.current.databaseLockTimeout {
             cell.accessoryType = .checkmark
         } else {
             cell.accessoryType = .none
@@ -93,11 +74,7 @@ class SettingsDatabaseTimeoutVC: UITableViewController, Refreshable {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let timeout = Settings.DatabaseLockTimeout.allValues[indexPath.row]
-        if Settings.current.isAvailable(timeout: timeout, for: premiumStatus) {
-            applyTimeoutAndDismiss(timeout)
-        } else {
-            premiumUpgradeHelper.offerUpgrade(.canUseLongDatabaseTimeouts, in: self)
-        }
+        applyTimeoutAndDismiss(timeout)
     }
     
     private func applyTimeoutAndDismiss(_ timeout: Settings.DatabaseLockTimeout) {

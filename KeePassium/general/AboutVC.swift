@@ -12,7 +12,6 @@ import KeePassiumLib
 class AboutVC: UITableViewController {
     @IBOutlet weak var appTitleLabel: UILabel!
     @IBOutlet weak var contactSupportCell: UITableViewCell!
-    @IBOutlet weak var writeReviewCell: UITableViewCell!
     @IBOutlet weak var versionLabel: UILabel!
     @IBOutlet weak var resetTextScaleCell: UITableViewCell!
     
@@ -32,8 +31,6 @@ class AboutVC: UITableViewController {
         100: "https://github.com/P-H-C/phc-winner-argon2",
         110: "https://cr.yp.to/salsa20.html",
         120: "http://www.cartotype.com/downloads/twofish/twofish.cpp",
-        122: "https://github.com/Yubico/yubikit-ios",
-        125: "https://github.com/tikhop/TPInAppReceipt",
         130: "https://github.com/1024jp/GzipSwift",
         140: "https://github.com/norio-nomura/Base32",
         150: "https://github.com/MengTo/Spring/blob/master/Spring/KeyboardLayoutConstraint.swift",
@@ -50,15 +47,7 @@ class AboutVC: UITableViewController {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 44
         
-        var versionParts = ["v\(AppInfo.version).\(AppInfo.build)"]
-        if Settings.current.isTestEnvironment {
-            versionParts.append("beta")
-        } else {
-            if BusinessModel.type == .prepaid {
-                versionParts.append("Pro")
-            }
-        }
-        versionLabel.text = versionParts.joined(separator: " ")
+        versionLabel.text = "v\(AppInfo.version).\(AppInfo.build) iOS 9"
         
         contactSupportCell.detailTextLabel?.text = SupportEmailComposer.getSupportEmail()
     }
@@ -78,8 +67,6 @@ class AboutVC: UITableViewController {
         case contactSupportCell:
             let popoverAnchor = PopoverAnchor(tableView: tableView, at: indexPath)
             SupportEmailComposer.show(subject: .supportRequest, parent: self, popoverAnchor: popoverAnchor)
-        case writeReviewCell:
-            AppStoreHelper.writeReview()
         case resetTextScaleCell:
             Settings.current.textScale = 1.0
             Diag.info("Text scale reset to 1.0")
@@ -88,7 +75,7 @@ class AboutVC: UITableViewController {
             tableView.endUpdates()
         default:
             if let urlString = cellTagToURL[selectedCell.tag], let url = URL(string: urlString) {
-                AppGroup.applicationShared?.open(url, options: [:], completionHandler: nil)
+                AppGroup.applicationShared?.kp_open(url)
             }
         } 
     }

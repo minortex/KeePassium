@@ -21,9 +21,6 @@ class HelpViewerVC: UIViewController {
             refresh()
         }
     }
-    private var contentSizeObservation: NSKeyValueObservation?
-    
-    
     public static func create() -> HelpViewerVC {
         return HelpViewerVC.instantiateFromStoryboard()
     }
@@ -43,11 +40,31 @@ class HelpViewerVC: UIViewController {
             NSAttributedString.Key.foregroundColor: UIColor.actionTint
         ]
         
-        contentSizeObservation = bodyTextView.observe(\.contentSize, options: [.new]) {
-            [weak self] (textView, change) in
-            self?.preferredContentSize = textView.contentSize
-        }
+        bodyTextView.addObserver(
+            self,
+            forKeyPath: #keyPath(UITextView.contentSize),
+            options: [.new],
+            context: nil)
         refresh()
+    }
+
+    deinit {
+        bodyTextView?.removeObserver(self, forKeyPath: #keyPath(UITextView.contentSize))
+    }
+
+    override func observeValue(
+        forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey: Any]?,
+        context: UnsafeMutableRawPointer?
+    ) {
+        if keyPath == #keyPath(UITextView.contentSize),
+           let textView = object as? UITextView
+        {
+            preferredContentSize = textView.contentSize
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        }
     }
     
     override func viewDidLayoutSubviews() {

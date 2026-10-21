@@ -51,8 +51,7 @@ class ViewEntryVC: UIViewController, Refreshable {
         pages.append(ViewEntryFieldsVC.make(with: entry, historyMode: isHistoryMode))
         pages.append(ViewEntryFilesVC.make(
             with: entry,
-            historyMode: isHistoryMode,
-            progressViewHost: self))
+            historyMode: isHistoryMode))
         pages.append(ViewEntryHistoryVC.make(with: entry, historyMode: isHistoryMode))
         
         pagesViewController = UIPageViewController(

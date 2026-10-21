@@ -6,41 +6,56 @@
 //  by the Free Software Foundation: https://www.gnu.org/licenses/).
 //  For commercial licensing, please contact the author.
 
-public class ProgressObserver {
+public class ProgressObserver: NSObject {
     internal let progress: ProgressEx
-    private var progressFractionKVO: NSKeyValueObservation?
-    private var progressDescriptionKVO: NSKeyValueObservation?
+    private var isObservingProgress = false
     
     init(progress: ProgressEx) {
         self.progress = progress
     }
     
     func startObservingProgress() {
-        assert(progressFractionKVO == nil && progressDescriptionKVO == nil)
-        progressFractionKVO = progress.observe(
-            \.fractionCompleted,
+        assert(!isObservingProgress)
+        isObservingProgress = true
+        progress.addObserver(
+            self,
+            forKeyPath: "fractionCompleted",
             options: [.new],
-            changeHandler: {
-                [weak self] (progress, _) in
-                self?.progressDidChange(progress: progress)
-            }
+            context: nil
         )
-        progressDescriptionKVO = progress.observe(
-            \.localizedDescription,
+        progress.addObserver(
+            self,
+            forKeyPath: "localizedDescription",
             options: [.new],
-            changeHandler: {
-                [weak self] (progress, _) in
-                self?.progressDidChange(progress: progress)
-            }
+            context: nil
         )
     }
     
     func stopObservingProgress() {
-        assert(progressFractionKVO != nil && progressDescriptionKVO != nil)
-        progressFractionKVO?.invalidate()
-        progressDescriptionKVO?.invalidate()
-        progressFractionKVO = nil
-        progressDescriptionKVO = nil
+        guard isObservingProgress else { return }
+        isObservingProgress = false
+        progress.removeObserver(
+            self,
+            forKeyPath: "fractionCompleted"
+        )
+        progress.removeObserver(
+            self,
+            forKeyPath: "localizedDescription"
+        )
+    }
+
+    deinit {
+        stopObservingProgress()
+    }
+
+    override public func observeValue(
+        forKeyPath keyPath: String?,
+        of object: Any?,
+        change: [NSKeyValueChangeKey: Any]?,
+        context: UnsafeMutableRawPointer?
+    ) {
+        guard let progress = object as? ProgressEx else { return }
+        progressDidChange(progress: progress)
     }
     
     func progressDidChange(progress: ProgressEx) {

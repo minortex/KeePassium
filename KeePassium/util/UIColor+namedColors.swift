@@ -9,48 +9,55 @@
 import UIKit
 
 extension UIColor {
+    private static func named(_ name: String) -> UIColor? {
+        if #available(iOS 11, *) {
+            return UIColor(named: name)
+        } else {
+            return nil
+        }
+    }
     
     static var actionTint: UIColor {
-        return UIColor(named: "ActionTint") ?? UIColor.systemBlue
+        return named("ActionTint") ?? UIColor.kpBlue
     }
     static var actionText: UIColor {
-        return UIColor(named: "ActionText") ?? .white
+        return named("ActionText") ?? .white
     }
     static var iconTint: UIColor {
-        return UIColor(named: "iconTint") ?? UIColor.systemBlue
+        return named("iconTint") ?? UIColor.kpBlue
     }
     static var destructiveTint: UIColor {
-        return UIColor(named: "DestructiveTint") ?? UIColor.systemRed
+        return named("DestructiveTint") ?? UIColor.kpRed
     }
     static var destructiveText: UIColor {
-        return UIColor(named: "DestructiveText") ?? .white
+        return named("DestructiveText") ?? .white
     }
     static var highlightTint: UIColor {
-        return UIColor(named: "HighlightTint") ?? UIColor.systemRed
+        return named("HighlightTint") ?? UIColor.kpRed
     }
     static var highglightText: UIColor {
-        return UIColor(named: "HighlightText") ?? .white
+        return named("HighlightText") ?? .white
     }
     static var errorMessage: UIColor {
-        return UIColor.systemRed
+        return UIColor.kpRed
     }
     static var primaryText: UIColor {
-        return UIColor(named: "PrimaryText") ?? .black
+        return named("PrimaryText") ?? .black
     }
     static var auxiliaryText: UIColor {
-        return UIColor(named: "AuxiliaryText") ?? .darkGray
+        return named("AuxiliaryText") ?? .darkGray
     }
     static var disabledText: UIColor {
-        return UIColor(named: "DisabledText") ?? .darkGray
+        return named("DisabledText") ?? .darkGray
     }
     static var passwordLetters: UIColor {
         return primaryText
     }
     static var passwordDigits: UIColor {
-        return UIColor(named: "PasswordDigits") ?? .systemBlue
+        return named("PasswordDigits") ?? UIColor.kpBlue
     }
     static var passwordSymbols: UIColor {
-        return UIColor(named: "PasswordSymbols") ?? .systemRed
+        return named("PasswordSymbols") ?? UIColor.kpRed
     }
 
 
@@ -64,12 +71,12 @@ extension UIColor {
         UIColor(red: 118/255, green: 214/255, blue: 255/255, alpha: 1)
 
     
-    static let systemRed = UIColor(red: 255/255, green: 59/255, blue: 48/255, alpha: 1)
-    static let systemOrange = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 1)
-    static let systemYellow = UIColor(red: 255/255, green: 204/255, blue: 0/255, alpha: 1)
-    static let systemGreen = UIColor(red: 76/255, green: 217/255, blue: 100/255, alpha: 1)
-    static let systemTealBlue = UIColor(red: 90/255, green: 200/255, blue: 250/255, alpha: 1)
-    static let systemBlue = UIColor(red: 0/255, green: 122/255, blue: 255/255, alpha: 1)
-    static let systemPurple = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1)
-    static let systemPink = UIColor(red: 255/255, green: 45/255, blue: 85/255, alpha: 1)
+    static let kpRed = UIColor(red: 255/255, green: 59/255, blue: 48/255, alpha: 1)
+    static let kpOrange = UIColor(red: 255/255, green: 149/255, blue: 0/255, alpha: 1)
+    static let kpYellow = UIColor(red: 255/255, green: 204/255, blue: 0/255, alpha: 1)
+    static let kpGreen = UIColor(red: 76/255, green: 217/255, blue: 100/255, alpha: 1)
+    static let kpTealBlue = UIColor(red: 90/255, green: 200/255, blue: 250/255, alpha: 1)
+    static let kpBlue = UIColor(red: 0/255, green: 122/255, blue: 255/255, alpha: 1)
+    static let kpPurple = UIColor(red: 88/255, green: 86/255, blue: 214/255, alpha: 1)
+    static let kpPink = UIColor(red: 255/255, green: 45/255, blue: 85/255, alpha: 1)
 }

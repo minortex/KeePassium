@@ -30,7 +30,6 @@ class AppHistoryViewerVC: UITableViewController {
         case historySection(section: AppHistory.Section)
     }
     
-    private let fallbackDate = PremiumManager.shared.fallbackDate
     private var sections = [TableSection]()
     
     private let dateFormatter: DateFormatter = {
@@ -49,17 +48,8 @@ class AppHistoryViewerVC: UITableViewController {
         
         guard let appHistory = appHistory else { return }
         
-        guard let perpetualFallbackDate = fallbackDate else {
-            sections = appHistory.sections.map { return TableSection.historySection(section: $0) }
-            return
-        }
-        var isFallbackSectionAdded = false
-        for release in appHistory.sections {
-            if !isFallbackSectionAdded && release.releaseDate < perpetualFallbackDate {
-                sections.append(TableSection.fallbackSeparator(date: perpetualFallbackDate))
-                isFallbackSectionAdded = true
-            }
-            sections.append(TableSection.historySection(section: release))
+        sections = appHistory.sections.map {
+            TableSection.historySection(section: $0)
         }
     }
 }
@@ -147,7 +137,7 @@ extension AppHistoryViewerVC {
             if isOwned {
                 cell.accessoryView = nil
                 cell.accessoryType = .checkmark
-                cell.tintColor = .systemYellow
+                cell.tintColor = .kpYellow
             } else {
                 cell.accessoryType = .none
                 cell.accessoryView = PremiumBadgeAccessory()

@@ -8,6 +8,46 @@
 
 import Foundation
 
+internal let urlSchemePrefixSeparator: Character = "+"
+
+public extension URL {
+    var schemePrefix: String? {
+        guard let scheme = self.scheme else { return nil }
+        let schemeParts = scheme.split(separator: urlSchemePrefixSeparator)
+        guard schemeParts.count > 1 else { return nil }
+        return String(schemeParts[0])
+    }
+
+    var schemeWithoutPrefix: String? {
+        guard let scheme = self.scheme else { return nil }
+        return String(scheme.split(
+            separator: urlSchemePrefixSeparator,
+            maxSplits: 1
+        ).last ?? "")
+    }
+
+    func withSchemePrefix(_ prefix: String) -> URL {
+        guard var components = URLComponents(url: self, resolvingAgainstBaseURL: false) else {
+            return self
+        }
+        let mainScheme = schemeWithoutPrefix ?? ""
+        components.scheme = prefix + String(urlSchemePrefixSeparator) + mainScheme
+        return components.url ?? self
+    }
+
+    func withoutSchemePrefix() -> URL {
+        guard var components = URLComponents(url: self, resolvingAgainstBaseURL: false) else {
+            return self
+        }
+        components.scheme = schemeWithoutPrefix
+        return components.url ?? self
+    }
+
+    var isRemoteURL: Bool {
+        return schemePrefix == WebDAVFileURL.schemePrefix
+    }
+}
+
 public extension URL {
     
     var domain2: String? {

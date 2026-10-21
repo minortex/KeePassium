@@ -71,14 +71,6 @@ public class FileKeeper {
             }
         }
 
-        static var autoFillExtensionPrefix: String {
-            if BusinessModel.type == .prepaid {
-                return "com.keepassium.pro.autoFill.recentFiles"
-            } else {
-                return "com.keepassium.autoFill.recentFiles"
-            }
-        }
-        
         static let internalDatabases = ".internal.databases"
         static let internalKeyFiles = ".internal.keyFiles"
         static let externalDatabases = ".external.databases"
@@ -88,6 +80,7 @@ public class FileKeeper {
     private static let documentsDirectoryName = "Documents"
     private static let inboxDirectoryName = "Inbox"
     private static let backupDirectoryName = "Backup"
+    private static let remoteCacheFileNamePrefix = ".webdav-"
     
     public enum OpenMode {
         case openInPlace
@@ -121,10 +114,11 @@ public class FileKeeper {
 
         print("\nDoc dir: \(docDirURL)\n")
         
-        guard let sharedContainerURL = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: AppGroup.id) else { fatalError() }
-        
-        let _backupDirURL = sharedContainerURL.appendingPathComponent(
+        let appSupportDirURL = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask)
+            .first!
+            .standardizedFileURL
+        let _backupDirURL = appSupportDirURL.appendingPathComponent(
             FileKeeper.backupDirectoryName,
             isDirectory: true)
         do {
@@ -154,6 +148,10 @@ public class FileKeeper {
     }
     
     public func getLocation(for filePath: URL) -> URLReference.Location {
+        if filePath.isRemoteURL {
+            return .remote
+        }
+
         let path: String
         if filePath.isDirectory {
             path = filePath.standardizedFileURL.path
@@ -189,11 +187,7 @@ public class FileKeeper {
                 keySuffix = UserDefaultsKey.internalKeyFiles
             }
         }
-        if AppGroup.isMainApp {
-            return UserDefaultsKey.mainAppPrefix + keySuffix
-        } else {
-            return UserDefaultsKey.autoFillExtensionPrefix + keySuffix
-        }
+        return UserDefaultsKey.mainAppPrefix + keySuffix
     }
     
     private func getStoredReferences(
@@ -202,7 +196,7 @@ public class FileKeeper {
         ) -> [URLReference]
     {
         let key = userDefaultsKey(for: fileType, external: isExternal)
-        guard let refsData = UserDefaults.appGroupShared.array(forKey: key) else {
+        guard let refsData = UserDefaults.standard.array(forKey: key) else {
             return []
         }
         var refs: [URLReference] = []
@@ -223,7 +217,7 @@ public class FileKeeper {
     {
         let serializedRefs = refs.map{ $0.serialize() }
         let key = userDefaultsKey(for: fileType, external: isExternal)
-        UserDefaults.appGroupShared.set(serializedRefs, forKey: key)
+        UserDefaults.standard.set(serializedRefs, forKey: key)
     }
 
     private func findStoredExternalReferenceFor(url: URL, fileType: FileType) -> URLReference? {
@@ -271,14 +265,9 @@ public class FileKeeper {
     public func getAllReferences(fileType: FileType, includeBackup: Bool) -> [URLReference] {
         var result: [URLReference] = []
         result.append(contentsOf:getStoredReferences(fileType: fileType, forExternalFiles: true))
-        if AppGroup.isMainApp {
-            let sandboxFileRefs = scanLocalDirectory(docDirURL, fileType: fileType)
-            storeReferences(sandboxFileRefs, fileType: fileType, forExternalFiles: false)
-            result.append(contentsOf: sandboxFileRefs)
-        } else {
-            result.append(contentsOf:
-                getStoredReferences(fileType: fileType, forExternalFiles: false))
-        }
+        let sandboxFileRefs = scanLocalDirectory(docDirURL, fileType: fileType)
+        storeReferences(sandboxFileRefs, fileType: fileType, forExternalFiles: false)
+        result.append(contentsOf: sandboxFileRefs)
 
         if includeBackup {
             let backupFileRefs = scanLocalDirectory(backupDirURL, fileType: fileType)
@@ -299,6 +288,9 @@ public class FileKeeper {
                 includingPropertiesForKeys: nil,
                 options: [])
             for url in dirContents {
+                if url.lastPathComponent.hasPrefix(FileKeeper.remoteCacheFileNamePrefix) {
+                    continue
+                }
                 let isFileTypeMatch = isIgnoreFileType || FileType(for: url) == fileType
                 if isFileTypeMatch && !url.isDirectory {
                     let urlRef = try URLReference(from: url, location: location)
@@ -362,28 +354,35 @@ public class FileKeeper {
                 errorHandler?(error)
             }
         }
-        guard sourceURL.isFileURL else {
-            Diag.error("Tried to import a non-file URL: \(sourceURL.redacted)")
-            let messageNotAFileURL = NSLocalizedString(
-                "[FileKeeper] Not a file URL",
-                bundle: Bundle.framework,
-                value: "Not a file URL",
-                comment: "Error message: tried to import URL which does not point to a file")
-            switch openMode {
-            case .import:
-                let importError = FileKeeperError.importError(reason: messageNotAFileURL)
-                mainQueueErrorHandler(importError)
-                return
-            case .openInPlace:
-                let openError = FileKeeperError.openError(reason: messageNotAFileURL)
-                mainQueueErrorHandler(openError)
-                return
+        let location = getLocation(for: sourceURL)
+        if location != .remote {
+            guard sourceURL.isFileURL else {
+                Diag.error("Tried to import a non-file URL: \(sourceURL.redacted)")
+                let messageNotAFileURL = NSLocalizedString(
+                    "[FileKeeper] Not a file URL",
+                    bundle: Bundle.framework,
+                    value: "Not a file URL",
+                    comment: "Error message: tried to import URL which does not point to a file")
+                switch openMode {
+                case .import:
+                    let importError = FileKeeperError.importError(reason: messageNotAFileURL)
+                    mainQueueErrorHandler(importError)
+                    return
+                case .openInPlace:
+                    let openError = FileKeeperError.openError(reason: messageNotAFileURL)
+                    mainQueueErrorHandler(openError)
+                    return
+                }
             }
         }
-        
-        
-        let location = getLocation(for: sourceURL)
+
         switch location {
+        case .remote:
+            processRemoteFile(
+                url: sourceURL,
+                fileType: fileType,
+                success: mainQueueSuccessHandler,
+                error: mainQueueErrorHandler)
         case .external:
             processExternalFile(
                 url: sourceURL,
@@ -404,6 +403,41 @@ public class FileKeeper {
                 location: location,
                 success: mainQueueSuccessHandler,
                 error: mainQueueErrorHandler)
+        }
+    }
+
+    private func processRemoteFile(
+        url sourceURL: URL,
+        fileType: FileType,
+        success successHandler: ((URLReference) -> Void)?,
+        error errorHandler: ((FileKeeperError) -> Void)?
+    ) {
+        guard fileType == .database else {
+            errorHandler?(.importError(reason: "Remote key files are not supported"))
+            return
+        }
+        guard sourceURL.schemeWithoutPrefix == "https" || sourceURL.schemeWithoutPrefix == "http" else {
+            errorHandler?(.openError(reason: "Only HTTP and HTTPS WebDAV URLs are supported"))
+            return
+        }
+        guard CredentialManager.shared.get(for: sourceURL) != nil else {
+            errorHandler?(.openError(reason: "WebDAV credentials are missing"))
+            return
+        }
+        do {
+            let newRef = try URLReference(from: sourceURL, location: .remote)
+            let storedRefs = getStoredReferences(
+                fileType: fileType,
+                forExternalFiles: true
+            )
+            let otherRefs = storedRefs.filter { $0 != newRef }
+            let updatedRefs = [newRef] + otherRefs
+            storeReferences(updatedRefs, fileType: fileType, forExternalFiles: true)
+            Settings.current.startupDatabase = newRef
+            FileKeeperNotifier.notifyFileAdded(urlRef: newRef, fileType: fileType)
+            successHandler?(newRef)
+        } catch {
+            errorHandler?(.openError(reason: error.localizedDescription))
         }
     }
     
@@ -462,19 +496,6 @@ public class FileKeeper {
                 },
                 error: errorHandler)
         case .keyFile:
-            guard AppGroup.isMainApp else {
-                addExternalFileRef(
-                    url: sourceURL,
-                    fileType: fileType,
-                    success: { (urlRef) in
-                        FileKeeperNotifier.notifyFileAdded(urlRef: urlRef, fileType: fileType)
-                        Diag.info("External key file added successfully")
-                        successHandler?(urlRef)
-                    },
-                    error: errorHandler
-                )
-                return 
-            }
             importFile(
                 url: sourceURL,
                 fileProvider: nil, 
@@ -783,6 +804,62 @@ public class FileKeeper {
     
     public func getBackupFiles() -> [URLReference] {
         return scanLocalDirectory(backupDirURL, fileType: .database)
+    }
+
+    public func cacheFile(for remoteURL: URL) -> URL {
+        let canonicalURL = WebDAVFileURL.canonicalize(remoteURL)
+        let cacheKey = ByteArray(utf8String: canonicalURL.absoluteString)
+            .sha256
+            .asHexString
+            .lowercased()
+        let fileExtension = canonicalURL.pathExtension
+        let fileName = FileKeeper.remoteCacheFileNamePrefix
+            + cacheKey
+            + (fileExtension.isEmpty ? "" : ".\(fileExtension)")
+        return docDirURL.appendingPathComponent(fileName, isDirectory: false)
+    }
+
+    public func readRemoteFile(
+        _ remoteURL: URL,
+        completion: @escaping (Result<ByteArray, FileAccessError>) -> Void
+    ) {
+        let cacheURL = cacheFile(for: remoteURL)
+        guard let credential = CredentialManager.shared.get(for: remoteURL) else {
+            completion(.failure(.authenticationFailed(
+                message: NSLocalizedString(
+                    "[WebDAV] Credentials are missing",
+                    bundle: Bundle.framework,
+                    value: "WebDAV credentials are missing.",
+                    comment: "Error message: no saved credentials for the WebDAV server.")
+            )))
+            return
+        }
+        WebDAVClient.shared.downloadFile(
+            url: remoteURL,
+            credential: credential
+        ) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let data):
+                do {
+                    try data.write(to: cacheURL, options: .atomic)
+                } catch {
+                    Diag.error("Failed to cache WebDAV database [message: \(error.localizedDescription)]")
+                    completion(.failure(.systemError(error)))
+                    return
+                }
+                completion(.success(data))
+            case .failure(let error):
+                // Only transient connectivity and server-availability errors use stale data.
+                if error.allowsCachedRemoteFallback,
+                   let cachedData = try? ByteArray(contentsOf: cacheURL) {
+                    Diag.warning("WebDAV unavailable, using cached database [reason: \(error.localizedDescription)]")
+                    completion(.success(cachedData))
+                } else {
+                    completion(.failure(error))
+                }
+            }
+        }
     }
     
     public func deleteExpiredBackupFiles() {

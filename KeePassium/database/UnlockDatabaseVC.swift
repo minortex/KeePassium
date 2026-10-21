@@ -33,7 +33,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
     }
     
     private var keyFileRef: URLReference?
-    private var yubiKey: YubiKey?
     private var fileKeeperNotifications: FileKeeperNotifications!
     
     private var canUseFinalKey = true
@@ -43,7 +42,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
     fileprivate var isAutomaticUnlock = false
 
     private var diagnosticsViewerCoordinator: DiagnosticsViewerCoordinator?
-    private var keyFilePickerCoordinator: KeyFilePickerCoordinator?
     
     private var isViewAppeared = false
     
@@ -55,7 +53,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
     
     deinit {
         diagnosticsViewerCoordinator = nil
-        keyFilePickerCoordinator = nil
     }
     
     override func viewDidLoad() {
@@ -73,15 +70,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
         errorMessagePanel.alpha = 0.0
         errorMessagePanel.isHidden = true
         
-        keyFileField.yubikeyHandler = {
-            [weak self] (field) in
-            guard let self = self else { return }
-            let popoverAnchor = PopoverAnchor(
-                sourceView: self.keyFileField,
-                sourceRect: self.keyFileField.bounds)
-            self.showHardwareKeyPicker(at: popoverAnchor)
-        }
-
         passwordField.inputAssistantItem.leadingBarButtonGroups = []
         passwordField.inputAssistantItem.trailingBarButtonGroups = []
         
@@ -112,8 +100,7 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
         }
         isViewAppeared = true
 
-        let premiumManager = PremiumManager.shared
-        canUseFinalKey = canUseFinalKey && premiumManager.isAvailable(feature: .canUseExpressUnlock)
+        canUseFinalKey = true
 
         fileKeeperNotifications.startObserving()
         NotificationCenter.default.addObserver(
@@ -187,9 +174,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
                 setKeyFile(availableKeyFileRef)
             }
         }
-        if let associatedYubiKey = dbSettings?.associatedYubiKey {
-            setYubiKey(associatedYubiKey)
-        }
         refreshNews()
         refreshInputMode()
     }
@@ -214,19 +198,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
     private func clearPasswordField() {
         passwordField.text = ""
     }
-    
-    
-    func showHardwareKeyPicker(at popoverAnchor: PopoverAnchor) {
-        let hardwareKeyPicker = HardwareKeyPicker.create(delegate: self)
-        hardwareKeyPicker.modalPresentationStyle = .popover
-        if let popover = hardwareKeyPicker.popoverPresentationController {
-            popoverAnchor.apply(to: popover)
-            popover.delegate = hardwareKeyPicker.dismissablePopoverDelegate
-        }
-        hardwareKeyPicker.key = yubiKey
-        present(hardwareKeyPicker, animated: true, completion: nil)
-    }
-    
     
     
     private var newsItem: NewsItem?
@@ -261,7 +232,11 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
             .joined(separator: "\n")
         errorLabel.text = message
         Diag.error(message)
-        UIAccessibility.post(notification: .layoutChanged, argument: errorLabel)
+        if #available(iOS 11.0, *) {
+            UIAccessibility.post(notification: .layoutChanged, argument: errorLabel)
+        } else {
+            UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, errorLabel)
+        }
         
         guard errorMessagePanel.isHidden else { return }
         
@@ -282,7 +257,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
                 }
             }
         )
-        StoreReviewSuggester.registerEvent(.trouble)
     }
     
     func hideErrorMessage(animated: Bool) {
@@ -395,27 +369,13 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
 
     
     func selectKeyFileAction(_ sender: Any) {
-        Diag.verbose("Selecting key file")
         hideErrorMessage(animated: true)
-
-        guard keyFilePickerCoordinator == nil else {
-            assertionFailure()
-            Diag.debug("Key file picker already shown")
-            return
-        }
-
-        let popoverAnchor = PopoverAnchor(
-            sourceView: keyFileField,
-            sourceRect: keyFileField.bounds
+        showErrorAlert(
+            NSLocalizedString(
+                "[Unlock/KeyFile/ReadOnly] Key-file selection is unavailable. Put the key file in KeePassium Documents with iTunes File Sharing.",
+                value: "Key-file selection is unavailable. Put the key file in KeePassium Documents with iTunes File Sharing.",
+                comment: "Message shown when selecting a key file in the iOS 9 read-only build")
         )
-        let modalRouter = NavigationRouter.createModal(style: .pageSheet, at: popoverAnchor)
-        keyFilePickerCoordinator = KeyFilePickerCoordinator(router: modalRouter, addingMode: .import)
-        keyFilePickerCoordinator!.dismissHandler = { [weak self] coordinator in
-            self?.keyFilePickerCoordinator = nil
-        }
-        keyFilePickerCoordinator!.delegate = self
-        keyFilePickerCoordinator!.start()
-        present(modalRouter, animated: true, completion: nil)
     }
     
     
@@ -459,10 +419,8 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
         hideWatchdogTimeoutMessage(animated: true)
         DatabaseManager.shared.addObserver(self)
         
-        let _challengeHandler = ChallengeResponseManager.makeHandler(for: yubiKey)
         let dbSettings = DatabaseSettingsManager.shared.getSettings(for: databaseRef)
         if let databaseKey = dbSettings?.masterKey {
-            databaseKey.challengeHandler = _challengeHandler
             DatabaseManager.shared.startLoadingDatabase(
                 database: databaseRef,
                 compositeKey: databaseKey,
@@ -479,7 +437,7 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
                 database: databaseRef,
                 password: password,
                 keyFile: keyFileRef,
-                challengeHandler: _challengeHandler)
+                challengeHandler: nil)
         }
     }
     
@@ -509,41 +467,7 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
     }
 }
 
-extension UnlockDatabaseVC: HardwareKeyPickerDelegate {
-    func didDismiss(_ picker: HardwareKeyPicker) {
-    }
-    
-    func didSelectKey(yubiKey: YubiKey?, in picker: HardwareKeyPicker) {
-        setYubiKey(yubiKey)
-    }
-    
-    func setYubiKey(_ yubiKey: YubiKey?) {
-        self.yubiKey = yubiKey
-        keyFileField.isYubiKeyActive = (yubiKey != nil)
-
-        DatabaseSettingsManager.shared.updateSettings(for: databaseRef) { (dbSettings) in
-            dbSettings.maybeSetAssociatedYubiKey(yubiKey)
-        }
-        if let _yubiKey = yubiKey {
-            Diag.info("Hardware key selected [key: \(_yubiKey)]")
-        } else {
-            Diag.info("No hardware key selected")
-        }
-    }
-}
-
-
-extension UnlockDatabaseVC: KeyFilePickerCoordinatorDelegate {
-    func didRemoveOrDeleteKeyFile(in coordinator: KeyFilePickerCoordinator, keyFile: URLReference) {
-        if self.keyFileRef == keyFile {
-            setKeyFile(nil)
-        }
-    }
-    
-    func didPickKeyFile(in coordinator: KeyFilePickerCoordinator, keyFile: URLReference?) {
-        setKeyFile(keyFile)
-    }
-    
+extension UnlockDatabaseVC {
     func setKeyFile(_ fileRef: URLReference?) {
         self.keyFileRef = fileRef
         DatabaseSettingsManager.shared.updateSettings(for: databaseRef) { (dbSettings) in

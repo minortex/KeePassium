@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="S0M-P8-Rfa">
-    <device id="retina4_7" orientation="portrait" appearance="dark"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="S0M-P8-Rfa">
+    <device id="retina4_7" orientation="portrait"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -19,7 +18,7 @@
                         <subviews>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="P3O-53-The">
                                 <rect key="frame" x="0.0" y="44" width="375" height="623"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </containerView>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aMH-EU-BBX">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -44,7 +43,7 @@
                                 <color key="tintColor" name="ActionTint"/>
                             </toolbar>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="aMH-EU-BBX" firstAttribute="top" secondItem="O2i-Ah-XJl" secondAttribute="top" id="5w3-oc-f1U"/>
                             <constraint firstItem="P3O-53-The" firstAttribute="top" secondItem="aMH-EU-BBX" secondAttribute="bottom" id="GMR-1H-Ugc"/>
@@ -54,7 +53,6 @@
                             <constraint firstItem="O2i-Ah-XJl" firstAttribute="trailing" secondItem="P3O-53-The" secondAttribute="trailing" id="RAt-lO-Q0m"/>
                             <constraint firstItem="O2i-Ah-XJl" firstAttribute="bottom" secondItem="P3O-53-The" secondAttribute="bottom" id="tEt-6c-P2B"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="O2i-Ah-XJl"/>
                     </view>
                     <navigationItem key="navigationItem" id="aYD-Ph-1TF">
                         <view key="titleView" contentMode="scaleToFill" id="pal-Aw-CDU" userLabel="Entry Title Container">
@@ -75,7 +73,7 @@
                                         <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="oab-OF-lN0" userLabel="V Stack View">
                                             <rect key="frame" x="37" y="0.0" width="95.5" height="29"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="{Entry Title}" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1XK-tJ-aQW">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="{Entry Title}" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1XK-tJ-aQW">
                                                     <rect key="frame" x="0.0" y="0.0" width="95.5" height="20.5"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                     <color key="textColor" name="PrimaryText"/>
@@ -87,7 +85,7 @@
                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                                                     </variation>
                                                 </label>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="{Timestamp}" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dT5-IW-ZsZ">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="{Timestamp}" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dT5-IW-ZsZ">
                                                     <rect key="frame" x="0.0" y="20.5" width="95.5" height="8.5"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                     <color key="textColor" name="AuxiliaryText"/>
@@ -110,7 +108,6 @@
                                 <constraint firstItem="FcN-vT-Wi4" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="DPz-iF-IQQ" secondAttribute="trailing" id="aD3-fO-PvI"/>
                                 <constraint firstItem="DPz-iF-IQQ" firstAttribute="centerX" secondItem="pal-Aw-CDU" secondAttribute="centerX" id="tyw-JB-QKN"/>
                             </constraints>
-                            <viewLayoutGuide key="safeArea" id="FcN-vT-Wi4"/>
                         </view>
                     </navigationItem>
                     <connections>

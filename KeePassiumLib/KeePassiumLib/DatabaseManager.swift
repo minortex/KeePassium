@@ -29,10 +29,10 @@ public class DatabaseManager {
     public var database: Database? { return databaseDocument?.database }
 
     public var isDatabaseOpen: Bool { return database != nil }
+    public var isDatabaseReadOnly: Bool { return true }
     
     private var databaseDocument: DatabaseDocument?
     private var databaseLoader: DatabaseLoader?
-    private var databaseSaver: DatabaseSaver?
     
     private var serialDispatchQueue = DispatchQueue(
         label: "com.keepassium.DatabaseManager",
@@ -170,41 +170,11 @@ public class DatabaseManager {
     }
     
     public func startSavingDatabase() {
-        guard let databaseDocument = databaseDocument, let dbRef = databaseRef else {
-            Diag.warning("Tried to save database before opening one.")
-            assertionFailure("Tried to save database before opening one.")
-            return
-        }
-        serialDispatchQueue.async {
-            self._saveDatabase(databaseDocument, dbRef: dbRef)
-            Diag.info("Async database saving finished")
-        }
+        Diag.warning("Database saving is disabled in the read-only build")
     }
     
-    private func _saveDatabase(
-        _ dbDoc: DatabaseDocument,
-        dbRef: URLReference)
-    {
-        precondition(database != nil, "No database to save")
-        Diag.info("Saving database")
-        
-        progress = ProgressEx()
-        progress.totalUnitCount = ProgressSteps.all
-        progress.completedUnitCount = ProgressSteps.start
-        
-        precondition(databaseSaver == nil)
-        databaseSaver = DatabaseSaver(
-            databaseDocument: dbDoc,
-            databaseRef: dbRef,
-            progress: progress,
-            delegate: self)
-        databaseSaver!.save()
-    }
-    
-    
-    public func changeCompositeKey(to newKey: CompositeKey) {
-        database?.changeCompositeKey(to: newKey)
-        Diag.info("Database composite key changed")
+    public func changeCompositeKey(to _: CompositeKey) {
+        Diag.warning("Changing the database master key is disabled in the read-only build")
     }
     
     public static func createCompositeKey(
@@ -288,38 +258,13 @@ public class DatabaseManager {
         success successHandler: @escaping () -> Void,
         error errorHandler: @escaping ((String?) -> Void))
     {
-        assert(database == nil)
-        assert(databaseDocument == nil)
-        let db2 = Database2.makeNewV4()
-        guard let root2 = db2.root as? Group2 else { fatalError() }
-        templateSetupHandler(root2)
-
-        self.databaseDocument = DatabaseDocument(fileURL: databaseURL, fileProvider: nil)
-        self.databaseDocument!.database = db2
-        DatabaseManager.createCompositeKey(
-            keyHelper: db2.keyHelper,
-            password: password,
-            keyFile: keyFile,
-            challengeHandler: challengeHandler,
-            success: { 
-                (newCompositeKey) in
-                DatabaseManager.shared.changeCompositeKey(to: newCompositeKey)
-                
-                do {
-                    self.databaseRef = try URLReference(from: databaseURL, location: .internalInbox)
-                    successHandler()
-                } catch {
-                    Diag.error("Failed to create reference to temporary DB file [message: \(error.localizedDescription)]")
-                    errorHandler(error.localizedDescription)
-                }
-            },
-            error: { 
-                (message) in
-                assert(self.databaseRef == nil)
-                self.abortDatabaseCreation()
-                Diag.error("Error creating composite key for a new database [message: \(message)]")
-                errorHandler(message)
-            }
+        Diag.warning("Database creation is disabled in the read-only build")
+        errorHandler(
+            NSLocalizedString(
+                "[DatabaseManager] Database creation is disabled",
+                bundle: Bundle.framework,
+                value: "Database creation is not available.",
+                comment: "Error message shown when database creation is attempted in the read-only build.")
         )
     }
 
@@ -335,7 +280,7 @@ public class DatabaseManager {
         switch dbRef.location {
         case .external, .internalDocuments:
             return true
-        case .internalBackup, .internalInbox:
+        case .internalBackup, .internalInbox, .remote:
             return false
         }
     }
@@ -510,64 +455,5 @@ extension DatabaseManager: DatabaseLoaderDelegate {
         self.databaseRef = dbRef
         self.databaseDocument = databaseDocument
         self.databaseLoader = nil
-    }
-}
-
-extension DatabaseManager: DatabaseSaverDelegate {
-    func databaseSaver(_ databaseSaver: DatabaseSaver, willSaveDatabase dbRef: URLReference) {
-        notificationQueue.async { 
-            for (_, observer) in self.observers {
-                guard let strongObserver = observer.observer else { continue }
-                DispatchQueue.main.async {
-                    strongObserver.databaseManager(willSaveDatabase: dbRef)
-                }
-            }
-        }
-    }
-    
-    func databaseSaver(
-        _ databaseSaver: DatabaseSaver,
-        didChangeProgress progress: ProgressEx,
-        for dbRef: URLReference)
-    {
-        databaseOperationProgressDidChange(database: dbRef, progress: progress)
-    }
-    
-    func databaseSaver(_ databaseSaver: DatabaseSaver, didCancelSaving dbRef: URLReference) {
-        databaseOperationCancelled(database: dbRef)
-    }
-    
-    func databaseSaver(_ databaseSaver: DatabaseSaver, didSaveDatabase dbRef: URLReference) {
-        notificationQueue.async { 
-            for (_, observer) in self.observers {
-                guard let strongObserver = observer.observer else { continue }
-                DispatchQueue.main.async {
-                    strongObserver.databaseManager(didSaveDatabase: dbRef)
-                }
-            }
-        }
-    }
-    
-    func databaseSaver(
-        _ databaseSaver: DatabaseSaver,
-        didFailSaving dbRef: URLReference,
-        error: Error,
-        data: ByteArray?
-    ) {
-        notificationQueue.async { 
-            for (_, observer) in self.observers {
-                guard let strongObserver = observer.observer else { continue }
-                DispatchQueue.main.async {
-                    strongObserver.databaseManager(
-                        database: dbRef,
-                        savingError: error,
-                        data: data)
-                }
-            }
-        }
-    }
-    
-    func databaseSaverDidFinish(_ databaseSaver: DatabaseSaver, for dbRef: URLReference) {
-        self.databaseSaver = nil
     }
 }

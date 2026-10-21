@@ -9,7 +9,6 @@
 //  Created by Igor Kulman on 19.03.2021.
 
 import Foundation
-import PhotosUI
 import KeePassiumLib
 
 typealias PhotoPickerCompletion = (Result<UIImage?, Error>) ->Void
@@ -21,11 +20,7 @@ protocol PhotoPicker {
 final class PhotoPickerFactory {
 
     static func makePhotoPicker() -> PhotoPicker {
-        if #available(iOS 14, *) {
-            return PHPickerViewControllerPhotoPicker()
-        } else {
-            return UIImagePickerControllerPhotoPicker()
-        }
+        return UIImagePickerControllerPhotoPicker()
     }
 }
 
@@ -59,63 +54,10 @@ private final class UIImagePickerControllerPhotoPicker:
 
     func imagePickerController(
         _ picker: UIImagePickerController,
-        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any])
+        didFinishPickingMediaWithInfo info: [String : Any])
     {
         imagePicker.dismiss(animated: true) { [weak self] in
-            self?.completion?(.success(info[UIImagePickerController.InfoKey.originalImage] as? UIImage))
-        }
-    }
-}
-
-@available(iOS 14, *)
-private final class PHPickerViewControllerPhotoPicker: PhotoPicker, PHPickerViewControllerDelegate {
-    let picker: PHPickerViewController
-    var viewController: UIViewController?
-    var completion: PhotoPickerCompletion?
-
-    init() {
-        var configuration = PHPickerConfiguration()
-        configuration.filter = .images
-        picker = PHPickerViewController(configuration: configuration)
-        picker.delegate = self
-    }
-
-    func pickImage(
-        from viewController: UIViewController,
-        completion: @escaping PhotoPickerCompletion
-    ) {
-        self.viewController = viewController
-        self.completion = completion
-
-        viewController.present(picker, animated: true, completion: nil)
-    }
-
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        guard let result = results.first,
-              result.itemProvider.canLoadObject(ofClass: UIImage.self)
-        else {
-            viewController?.dismiss(animated: true) { [weak self] in
-                self?.completion?(.success(nil))
-            }
-            return
-        }
-
-        result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
-            if let error = error {
-                Diag.error("Picking icon with PHPickerViewController failed [message: \(error.localizedDescription)]")
-                DispatchQueue.main.async { [weak self] in
-                    self?.viewController?.dismiss(animated: true) { [weak self] in
-                        self?.completion?(.failure(error))
-                    }
-                }
-                return
-            }
-
-            DispatchQueue.main.async { [weak self] in
-                self?.viewController?.dismiss(animated: true) { [weak self] in
-                    self?.completion?(.success(image as? UIImage))
-                }
-            }
+            self?.completion?(.success(info[UIImagePickerControllerOriginalImage] as? UIImage))
         }
     }
 }

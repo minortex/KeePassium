@@ -11,17 +11,16 @@ import Foundation
 public extension Date {
     static var now: Date { return Date() }
     
-    private static let iso8601DateFormatter = { () -> ISO8601DateFormatter in
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
+    private static let iso8601DateFormatters = [
+        "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ",
+    ].map { format -> DateFormatter in
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = format
         return formatter
-    }()
-    
-    private static let iso8601DateFormatterWithFractionalSeconds = { () -> ISO8601DateFormatter in
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions =  [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
+    }
     
     private static let miniKeePassDateFormatter = { () -> DateFormatter in
         let formatter = DateFormatter()
@@ -35,15 +34,16 @@ public extension Date {
 
     init?(iso8601string string: String?) {
         guard let string = string else { return nil }
-        if let date = Date.iso8601DateFormatter.date(from: string) {
+        if let date = Date.iso8601DateFormatters
+            .compactMap({ $0.date(from: string) })
+            .first {
             self = date
-        } else if let date = Date.iso8601DateFormatterWithFractionalSeconds.date(from: string) {
-            self = date
-        } else if let date = Date.miniKeePassDateFormatter.date(from: string) {
-            self = date
-        } else {
+            return
+        }
+        guard let date = Date.miniKeePassDateFormatter.date(from: string) else {
             return nil
         }
+        self = date
     }
     
     init?(base64Encoded string: String?) {
@@ -55,7 +55,11 @@ public extension Date {
     }
     
     func iso8601String() -> String {
-        return Date.iso8601DateFormatter.string(from: self)
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        return formatter.string(from: self)
     }
     
     func base64EncodedString() -> String {

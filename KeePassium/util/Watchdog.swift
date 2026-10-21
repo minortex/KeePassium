@@ -148,7 +148,7 @@ class Watchdog {
     open func restart() {
         guard let delegate = delegate else { return }
         guard !delegate.isAppLocked else { return }
-        Settings.current.recentUserActivityTimestamp = Date.now
+        Settings.current.recentUserActivityTimestamp = Date()
         restartAppTimer()
         restartDatabaseTimer()
     }
@@ -172,7 +172,7 @@ class Watchdog {
             let timestampOfRecentActivity = Settings.current
                 .recentUserActivityTimestamp
                 .timeIntervalSinceReferenceDate
-            let timestampNow = Date.now.timeIntervalSinceReferenceDate
+            let timestampNow = Date().timeIntervalSinceReferenceDate
             let secondsPassed = timestampNow - timestampOfRecentActivity
             return secondsPassed > Double(timeout.seconds)
         }
@@ -189,7 +189,7 @@ class Watchdog {
             let timestampOfRecentActivity = Settings.current
                 .recentUserActivityTimestamp
                 .timeIntervalSinceReferenceDate
-            let timestampNow = Date.now.timeIntervalSinceReferenceDate
+            let timestampNow = Date().timeIntervalSinceReferenceDate
             let secondsPassed = timestampNow - timestampOfRecentActivity
             return secondsPassed > Double(timeout.seconds)
         }

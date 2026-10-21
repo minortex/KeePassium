@@ -17,8 +17,6 @@ class GroupViewListCell: UITableViewCell {
 
 final class ViewGroupVC:
     TableViewControllerWithContextActions,
-    DatabaseSaving,
-    ProgressViewHost,
     Refreshable
 {
     private enum CellID {
@@ -51,7 +49,6 @@ final class ViewGroupVC:
     
     private var groupsSorted = Array<Weak<Group>>()
     private var entriesSorted = Array<Weak<Entry>>()
-    private weak var shownEntry: Entry?
 
     private var isActivateSearch: Bool = false
     private var searchHelper = SearchHelper()
@@ -68,24 +65,12 @@ final class ViewGroupVC:
     private var entryChangeNotifications: EntryChangeNotifications!
     private var settingsNotifications: SettingsNotifications!
 
-    var databaseExporterTemporaryURL: TemporaryFileURL?
-    
-    var itemRelocationCoordinator: ItemRelocationCoordinator?
-    var groupEditorCoordinator: GroupEditorCoordinator?
-    var entryFieldEditorCoordinator: EntryFieldEditorCoordinator?
-    
     static func make(group: Group?, loadingWarnings: DatabaseLoadingWarnings?=nil) -> ViewGroupVC {
         let viewGroupVC = ViewGroupVC.instantiateFromStoryboard()
         viewGroupVC.group = group
         viewGroupVC.loadingWarnings = loadingWarnings
         group?.touch(.accessed)
         return viewGroupVC
-    }
-    
-    deinit {
-        itemRelocationCoordinator = nil
-        groupEditorCoordinator = nil
-        entryFieldEditorCoordinator = nil
     }
     
     override func viewDidLoad() {
@@ -100,12 +85,9 @@ final class ViewGroupVC:
             handleItemSelection(indexPath: nil)
         }
 
-        let createItemButton = UIBarButtonItem(
-            image: UIImage(asset: .createItemToolbar),
-            style: .plain, target: self,
-            action: #selector(onCreateNewItemAction))
-        createItemButton.accessibilityLabel = LString.actionCreate
-        navigationItem.setRightBarButton(createItemButton, animated: false)
+        toolbarItems?.removeAll {
+            $0.action == #selector(didPressChangeDatabaseSettings(_:))
+        }
         
         isActivateSearch = Settings.current.isStartWithSearch && (group?.isRoot ?? false)
         
@@ -114,8 +96,12 @@ final class ViewGroupVC:
         settingsNotifications = SettingsNotifications(observer: self)
         
         searchController = UISearchController(searchResultsController: nil)
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = true
+        if #available(iOS 11.0, *) {
+            navigationItem.searchController = searchController
+            navigationItem.hidesSearchBarWhenScrolling = true
+        } else {
+            tableView.tableHeaderView = searchController.searchBar
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -135,11 +121,6 @@ final class ViewGroupVC:
             loadingWarnings = nil 
         }
         
-        if group?.parent == nil { 
-            StoreReviewSuggester.maybeShowAppReview(
-                appVersion: AppInfo.version,
-                occasion: .didOpenDatabase)
-        }
     }
     
     override func didMove(toParent parent: UIViewController?) {
@@ -171,24 +152,12 @@ final class ViewGroupVC:
     private func showLoadingWarnings(_ warnings: DatabaseLoadingWarnings) {
         guard !warnings.isEmpty else { return }
         
-        var message = warnings.messages.joined(separator: "\n\n")
-        if warnings.isGeneratorImportant {
-            let lastUsedAppName = warnings.databaseGenerator ?? ""
-            let footerLine = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "[Database/Opened/Warning/lastEdited] Database was last edited by: %@",
-                    value: "Database was last edited by: %@",
-                    comment: "Status message: name of the app that was last to write/create the database file. [lastUsedAppName: String]"),
-                lastUsedAppName)
-            message += "\n\n" + footerLine
-        }
-        
         let alert = UIAlertController(
             title: NSLocalizedString(
                 "[Database/Opened/Warning/title] Your database is ready, but there was an issue.",
                 value: "Your database is ready, but there was an issue.",
                 comment: "Title of a warning message, shown after opening a problematic database"),
-            message: message,
+            message: warnings.messages.joined(separator: "\n\n"),
             preferredStyle: .alert)
         let continueAction = UIAlertAction(
             title: NSLocalizedString(
@@ -197,21 +166,6 @@ final class ViewGroupVC:
                 comment: "Action: ignore warnings and proceed to work with the database"),
             style: .default,
             handler: nil)
-        let contactUsAction = UIAlertAction(
-            title: LString.actionContactUs,
-            style: .default,
-            handler: { (action) in
-                let popoverAnchor = PopoverAnchor(sourceView: self.view, sourceRect: self.view.frame)
-                SupportEmailComposer.show(
-                    subject: .problem,
-                    parent: self,
-                    popoverAnchor: popoverAnchor,
-                    completion: { (isSent) in
-                        alert.dismiss(animated: false, completion: nil)
-                    }
-                )
-            }
-        )
         let lockDatabaseAction = UIAlertAction(
             title: NSLocalizedString(
                 "[Database/Opened/Warning/action] Close Database",
@@ -231,19 +185,11 @@ final class ViewGroupVC:
         )
         alert.addAction(continueAction)
         alert.addAction(lockDatabaseAction)
-        alert.addAction(contactUsAction)
         present(alert, animated: true, completion: nil)
-        
-        StoreReviewSuggester.registerEvent(.trouble)
     }
         
     
     private func setupSearch() {
-        guard navigationItem.searchController != nil else {
-            assertionFailure()
-            return
-        }
-
         searchController.searchBar.searchBarStyle = .default
         searchController.searchBar.returnKeyType = .search
         searchController.searchBar.barStyle = .default
@@ -251,7 +197,9 @@ final class ViewGroupVC:
         } else {
             searchController.dimsBackgroundDuringPresentation = false
         }
-        searchController.obscuresBackgroundDuringPresentation = false
+        if #available(iOS 9.0, *) {
+            searchController.obscuresBackgroundDuringPresentation = false
+        }
         searchController.hidesNavigationBarDuringPresentation = true
         searchController.delegate = self
 
@@ -447,10 +395,17 @@ final class ViewGroupVC:
                 [weak field] _ -> Bool in
                 if let fieldValue = field?.resolvedValue {
                     Clipboard.general.insert(fieldValue)
-                    UIAccessibility.post(
-                        notification: .announcement,
-                        argument: LString.titleCopiedToClipboard
-                    )
+                    if #available(iOS 11.0, *) {
+                        UIAccessibility.post(
+                            notification: .announcement,
+                            argument: LString.titleCopiedToClipboard
+                        )
+                    } else {
+                        UIAccessibilityPostNotification(
+                            UIAccessibilityAnnouncementNotification,
+                            LString.titleCopiedToClipboard
+                        )
+                    }
                 }
                 return true
             }
@@ -464,14 +419,14 @@ final class ViewGroupVC:
         case .none:
             return nil
         case .userName:
-            return entry.getField(EntryField.userName)?.premiumDecoratedValue
+            return entry.getField(EntryField.userName)?.resolvedValue
         case .password:
-            return entry.getField(EntryField.password)?.premiumDecoratedValue
+            return entry.getField(EntryField.password)?.resolvedValue
         case .url:
-            return entry.getField(EntryField.url)?.premiumDecoratedValue
+            return entry.getField(EntryField.url)?.resolvedValue
         case .notes:
             return entry.getField(EntryField.notes)?
-                .premiumDecoratedValue
+                .resolvedValue
                 .replacingOccurrences(of: "\r", with: " ")
                 .replacingOccurrences(of: "\n", with: " ")
         case .lastModifiedDate:
@@ -526,7 +481,6 @@ final class ViewGroupVC:
     
     func handleItemSelection(indexPath: IndexPath?) {
         guard let indexPath = indexPath else {
-            shownEntry = nil
             let placeholderVC = PlaceholderVC.make()
             showDetailViewController(placeholderVC, sender: self)
             return
@@ -548,242 +502,17 @@ final class ViewGroupVC:
             if splitViewController?.isCollapsed ?? false {
                 tableView.deselectRow(at: indexPath, animated: false)
             }
-            shownEntry = selectedEntry
             let viewEntryVC = ViewEntryVC.make(with: selectedEntry)
             showDetailViewController(viewEntryVC, sender: self)
         }
     }
     
     
-    private func canCreateGroupHere() -> Bool {
-        guard let group = group else { return false }
-        
-        return !group.isDeleted
-    }
-    
-    private func canCreateEntryHere() -> Bool {
-        guard let group = group else { return false }
-        guard !group.isDeleted else { return false }
-        
-        if let group1 = group as? Group1 {
-            return !group1.isRoot
-        }
-        return true
-    }
-    
-    private func canMove(_ group: Group) -> Bool {
-        guard !group.isRoot else { return false }
-        
-        if let group1 = group as? Group1,
-            let database1 = group1.database as? Database1,
-            group1 === database1.getBackupGroup(createIfMissing: false)
-        {
-            return false
-        }
-        return true
-    }
-    
-    private func canMove(_ entry: Entry) -> Bool {
-        return true
-    }
-
-    private func canEdit(_ group: Group) -> Bool {
-        let isRecycleBin = (group === group.database?.getBackupGroup(createIfMissing: false))
-        if isRecycleBin {
-            let isEditable = group is Group2
-            return isEditable
-        }
-        return !group.isDeleted
-    }
-    
-    private func canEdit(_ entry: Entry) -> Bool {
-        return !entry.isDeleted
-    }
-
-    
     override func getContextActionsForRow(
         at indexPath: IndexPath,
         forSwipe: Bool
     ) -> [ContextualAction] {
-        guard getItem(at: indexPath) != nil else {
-            return []
-        }
-        
-        let editAction = ContextualAction(
-            title: LString.actionEdit,
-            imageName: .squareAndPencil,
-            style: .default,
-            color: UIColor.actionTint,
-            handler: { [weak self, indexPath] in
-                self?.onEditItemAction(at: indexPath)
-            }
-        )
-        let deleteAction = ContextualAction(
-            title: LString.actionDelete,
-            imageName: .trash,
-            style: .destructive,
-            color: UIColor.destructiveTint,
-            handler: { [weak self, indexPath] in
-                self?.onDeleteItemAction(at: indexPath)
-            }
-        )
-        
-        if forSwipe {
-            if let entry = getEntry(at: indexPath), canEdit(entry) {
-                return [deleteAction, editAction]
-            }
-            if let group = getGroup(at: indexPath), canEdit(group) {
-                return [deleteAction, editAction]
-            }
-            return [deleteAction]
-        }
-        
-        let moveAction = ContextualAction(
-            title: LString.actionMove,
-            imageName: .folder,
-            style: .default,
-            handler: { [weak self, indexPath] in
-                self?.onRelocateItemAction(at: indexPath, mode: .move)
-            }
-        )
-        let copyAction = ContextualAction(
-            title: LString.actionCopy,
-            imageName: .docOnDoc,
-            style: .default,
-            handler: { [weak self, indexPath] in
-                self?.onRelocateItemAction(at: indexPath, mode: .copy)
-            }
-        )
-
-        var actions = [ContextualAction]()
-        if let entry = getEntry(at: indexPath) {
-            if canEdit(entry) {
-                actions.append(editAction)
-            }
-            if canMove(entry) {
-                actions.append(moveAction)
-                actions.append(copyAction)
-            }
-            actions.append(deleteAction)
-        }
-        if let group = getGroup(at: indexPath) {
-            if canEdit(group) {
-                actions.append(editAction)
-            }
-            if canMove(group) {
-                actions.append(moveAction)
-                actions.append(copyAction)
-            }
-            actions.append(deleteAction)
-        }
-        return actions
-    }
-    
-
-    @objc func onCreateNewItemAction(sender: UIBarButtonItem) {
-        let addItemSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        let createGroupAction = UIAlertAction(title: LString.actionCreateGroup, style: .default) {
-            [weak self] _ in
-            self?.createGroup()
-        }
-        createGroupAction.isEnabled = canCreateGroupHere()
-        
-        let createEntryAction = UIAlertAction(title: LString.actionCreateEntry, style: .default) {
-            [weak self] _ in
-            self?.createEntry()
-            
-        }
-        createEntryAction.isEnabled = canCreateEntryHere()
-        
-        let cancelAction = UIAlertAction(title: LString.actionCancel, style: .cancel, handler: nil)
-        
-        addItemSheet.addAction(createGroupAction)
-        addItemSheet.addAction(createEntryAction)
-        addItemSheet.addAction(cancelAction)
-
-        addItemSheet.modalPresentationStyle = .popover
-        if let popover = addItemSheet.popoverPresentationController {
-            popover.barButtonItem = sender
-        }
-        present(addItemSheet, animated: true, completion: nil)
-    }
-    
-    func onEditItemAction(at indexPath: IndexPath) {
-        let popoverAnchor = PopoverAnchor(tableView: tableView, at: indexPath)
-        if let selectedGroup = getGroup(at: indexPath) {
-            editGroup(selectedGroup, at: popoverAnchor)
-            return
-        }
-        if let selectedEntry = getEntry(at: indexPath) {
-            editEntry(selectedEntry, at: popoverAnchor)
-            return
-        }
-    }
-    
-    func onDeleteItemAction(at indexPath: IndexPath) {
-        let confirmationAlert = UIAlertController(title: "", message: nil, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: LString.actionCancel, style: .cancel, handler: nil)
-        confirmationAlert.addAction(cancelAction)
-
-        if let targetGroup = getGroup(at: indexPath) {
-            confirmationAlert.title = targetGroup.name
-            let deleteAction = UIAlertAction(title: LString.actionDelete, style: .destructive)
-            {
-                [weak self] _ in
-                guard let database = targetGroup.database else { return }
-                database.delete(group: targetGroup)
-                targetGroup.touch(.accessed)
-                self?.saveDatabase()
-            }
-            confirmationAlert.addAction(deleteAction)
-            present(confirmationAlert, animated: true, completion: nil)
-            return
-        }
-        
-        if let targetEntry = getEntry(at: indexPath) {
-            let isDeletingShownEntry = (targetEntry === shownEntry)
-            confirmationAlert.title = targetEntry.resolvedTitle
-            let deleteAction = UIAlertAction(title: LString.actionDelete, style: .destructive)
-            {
-                [weak self] _ in
-                guard let database = targetEntry.database else { return }
-                database.delete(entry: targetEntry)
-                targetEntry.touch(.accessed)
-                if isDeletingShownEntry && !(self?.splitViewController?.isCollapsed ?? true) {
-                    self?.handleItemSelection(indexPath: nil) 
-                }
-                self?.saveDatabase()
-            }
-            confirmationAlert.addAction(deleteAction)
-            present(confirmationAlert, animated: true, completion: nil)
-            return
-        }
-    }
-    
-
-    func onRelocateItemAction(at indexPath: IndexPath, mode: ItemRelocationMode) {
-        guard let database = group?.database else { return }
-
-        guard let selectedItem = getItem(at: indexPath) else {
-            Diag.warning("No items selected for relocation")
-            assertionFailure()
-            return
-        }
-
-        assert(itemRelocationCoordinator == nil)
-        let popoverAnchor = PopoverAnchor(tableView: tableView, at: indexPath)
-        let modalRouter = NavigationRouter.createModal(style: .popover, at: popoverAnchor)
-        itemRelocationCoordinator = ItemRelocationCoordinator(
-            router: modalRouter,
-            database: database,
-            mode: mode,
-            itemsToRelocate: [Weak(selectedItem)])
-        itemRelocationCoordinator?.dismissHandler = { [weak self] coordinator in
-            self?.itemRelocationCoordinator = nil
-        }
-        itemRelocationCoordinator?.delegate = self
-        itemRelocationCoordinator?.start()
-        present(modalRouter, animated: true, completion: nil)
+        return []
     }
 
     var diagnosticsViewerCoordinator: DiagnosticsViewerCoordinator?
@@ -833,159 +562,7 @@ final class ViewGroupVC:
     }
     
     @IBAction func didPressChangeDatabaseSettings(_ sender: Any) {
-        guard let dbRef = DatabaseManager.shared.databaseRef else {
-            assertionFailure("databaseRef should not be nil here")
-            return
-        }
-        let vc = ChangeMasterKeyVC.make(dbRef: dbRef)
-        present(vc, animated: true, completion: nil)
-    }
-    
-    
-    private func editGroup(_ group: Group, at popoverAnchor: PopoverAnchor) {
-        Diag.info("Will edit group")
-        showGroupEditor(for: group, at: popoverAnchor)
-    }
-    
-    private func createGroup() {
-        Diag.info("Will create group")
-        showGroupEditor(for: nil, at: nil)
-    }
-    
-    private func showGroupEditor(for groupToEdit: Group?, at popoverAnchor: PopoverAnchor?) {
-        assert(groupEditorCoordinator == nil)
-        guard let parent = self.group,
-              let database = parent.database
-        else {
-            Diag.warning("Database or parent group are not defined")
-            assertionFailure()
-            return
-        }
-        
-        let modalRouter = NavigationRouter.createModal(style: .formSheet, at: popoverAnchor)
-        let groupEditorCoordinator = GroupEditorCoordinator(
-            router: modalRouter,
-            database: database,
-            parent: parent,
-            target: groupToEdit)
-        groupEditorCoordinator.dismissHandler = { [weak self] coordinator in
-            self?.groupEditorCoordinator = nil
-        }
-        groupEditorCoordinator.delegate = self
-        groupEditorCoordinator.start()
-        self.groupEditorCoordinator = groupEditorCoordinator
-        navigationController?.present(modalRouter, animated: true, completion: nil)
-    }
-    
-    private func editEntry(_ entry: Entry, at popoverAnchor: PopoverAnchor) {
-        Diag.info("Will edit entry")
-        showEntryEditor(for: entry, at: popoverAnchor)
-    }
-    
-    private func createEntry() {
-        Diag.info("Will create entry")
-        showEntryEditor(for: nil, at: nil)
-    }
-    
-    private func showEntryEditor(for entryToEdit: Entry?, at popoverAnchor: PopoverAnchor?) {
-        assert(entryFieldEditorCoordinator == nil)
-        guard let parent = self.group,
-              let database = parent.database
-        else {
-            Diag.warning("Database or parent group are not definted")
-            assertionFailure()
-            return
-        }
-        
-        let modalRouter = NavigationRouter.createModal(style: .formSheet, at: popoverAnchor)
-        let entryFieldEditorCoordinator = EntryFieldEditorCoordinator(
-            router: modalRouter,
-            database: database,
-            parent: parent,
-            target: entryToEdit
-        )
-        entryFieldEditorCoordinator.dismissHandler = { [weak self] coordinator in
-            self?.entryFieldEditorCoordinator = nil
-        }
-        entryFieldEditorCoordinator.delegate = self
-        entryFieldEditorCoordinator.start()
-        modalRouter.dismissAttemptDelegate = entryFieldEditorCoordinator
-        self.entryFieldEditorCoordinator = entryFieldEditorCoordinator
-        navigationController?.present(modalRouter, animated: true, completion: nil)
-    }
-    
-    
-    func saveDatabase() {
-        DatabaseManager.shared.addObserver(self)
-        DatabaseManager.shared.startSavingDatabase()
-    }
-    
-    
-    private var savingOverlay: ProgressOverlay?
-    
-    public func showProgressView(title: String, allowCancelling: Bool) {
-        guard let splitVC = splitViewController else { fatalError() }
-        savingOverlay = ProgressOverlay.addTo(
-            splitVC.view,
-            title: title,
-            animated: true)
-        savingOverlay?.isCancellable = allowCancelling
-    }
-    
-    public func updateProgressView(with progress: ProgressEx) {
-        savingOverlay?.update(with: progress)
-    }
-    
-    public func hideProgressView() {
-        savingOverlay?.dismiss(animated: true) {
-            [weak self] finished in
-            guard let self = self else { return }
-            self.savingOverlay?.removeFromSuperview()
-            self.savingOverlay = nil
-        }
-    }
-}
-
-extension ViewGroupVC: DatabaseManagerObserver {
-    
-    public func databaseManager(willSaveDatabase urlRef: URLReference) {
-        showProgressView(title: LString.databaseStatusSaving, allowCancelling: false)
-    }
-    
-    public func databaseManager(didSaveDatabase urlRef: URLReference) {
-        DatabaseManager.shared.removeObserver(self)
-        refresh()
-        hideProgressView()
-    }
-    
-    public func databaseManager(database urlRef: URLReference, isCancelled: Bool) {
-        DatabaseManager.shared.removeObserver(self)
-        refresh()
-        hideProgressView()
-    }
-
-    public func databaseManager(progressDidChange progress: ProgressEx) {
-        updateProgressView(with: progress)
-    }
-
-    public func databaseManager(
-        database urlRef: URLReference,
-        savingError error: Error,
-        data: ByteArray?
-    ) {
-        DatabaseManager.shared.removeObserver(self)
-        refresh()
-        hideProgressView()
-        
-        showDatabaseSavingError(
-            error,
-            fileName: urlRef.visibleFileName,
-            diagnosticsHandler: { [weak self] in
-                self?.showDiagnostics()
-            },
-            exportableData: data,
-            parent: self
-        )
+        // The database is read-only, so changing its master key is unavailable.
     }
 }
 
@@ -1006,14 +583,12 @@ extension ViewGroupVC: SettingsObserver {
 extension ViewGroupVC: EntryChangeObserver {
     func entryDidChange(entry: Entry) {
         refresh()
-        StoreReviewSuggester.maybeShowAppReview(appVersion: AppInfo.version, occasion: .didEditItem)
     }
 }
 
 extension ViewGroupVC: GroupChangeObserver {
     func groupDidChange(group: Group) {
         refresh()
-        StoreReviewSuggester.maybeShowAppReview(appVersion: AppInfo.version, occasion: .didEditItem)
     }
 }
 
@@ -1036,33 +611,5 @@ extension ViewGroupVC: UISearchResultsUpdating {
 extension ViewGroupVC: UISearchControllerDelegate {
     public func didDismissSearchController(_ searchController: UISearchController) {
         refresh()
-    }
-}
-
-extension ViewGroupVC: ItemRelocationCoordinatorDelegate {
-    func didRelocateItems(in coordinator: ItemRelocationCoordinator) {
-        refresh()
-    }
-}
-
-extension ViewGroupVC: GroupEditorCoordinatorDelegate {
-    func didUpdateGroup(_ group: Group, in coordinator: GroupEditorCoordinator) {
-        refresh()
-    }
-}
-
-extension ViewGroupVC: EntryFieldEditorCoordinatorDelegate {
-    func didUpdateEntry(_ entry: Entry, in coordinator: EntryFieldEditorCoordinator) {
-        refresh()
-        
-        guard let splitVC = splitViewController else { fatalError() }
-        
-        if !splitVC.isCollapsed,
-            let entryIndex = entriesSorted.firstIndex(where: { $0.value === entry })
-        {
-            let indexPath = IndexPath(row: groupsSorted.count + entryIndex, section: 0)
-            handleItemSelection(indexPath: indexPath)
-            tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none) 
-        }
     }
 }

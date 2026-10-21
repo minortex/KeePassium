@@ -10,21 +10,8 @@ import Foundation
 
 public extension Settings {
     
-    private static let heavyUseDatabaseLockTimeout = DatabaseLockTimeout.after5minutes
-    private static let lightUseDatabaseLockTimeout = DatabaseLockTimeout.after1hour
-    
     var premiumDatabaseLockTimeout: Settings.DatabaseLockTimeout {
-        let actualTimeout = Settings.current.databaseLockTimeout
-        switch PremiumManager.shared.status {
-        case .initialGracePeriod,
-             .freeLightUse:
-            return min(actualTimeout, Settings.lightUseDatabaseLockTimeout)
-        case .freeHeavyUse:
-            return min(actualTimeout, Settings.heavyUseDatabaseLockTimeout)
-        case .subscribed,
-             .lapsed:
-            return actualTimeout
-        }
+        return databaseLockTimeout
     }
     
     var premiumIsBiometricAppLockEnabled: Bool {
@@ -37,36 +24,14 @@ public extension Settings {
     
     var premiumIsLockDatabasesOnTimeout: Bool {
         let actualValue = Settings.current.isLockDatabasesOnTimeout
-        if PremiumManager.shared.isAvailable(feature: .canKeepMasterKeyOnDatabaseTimeout) {
-            return actualValue
-        } else {
-            return true
-        }
+        return actualValue
     }
     
     func isAvailable(timeout: Settings.DatabaseLockTimeout, for status: PremiumManager.Status) -> Bool {
-        switch status {
-        case .initialGracePeriod,
-             .freeLightUse:
-            return timeout <= Settings.lightUseDatabaseLockTimeout
-        case .freeHeavyUse:
-            return timeout <= Settings.heavyUseDatabaseLockTimeout && timeout != .never
-        case .subscribed,
-             .lapsed:
-            return true
-        }
+        return true
     }
     
     func isShownAvailable(timeout: Settings.DatabaseLockTimeout, for status: PremiumManager.Status) -> Bool {
-        switch status {
-        case .initialGracePeriod,
-             .freeLightUse:
-            return timeout <= Settings.lightUseDatabaseLockTimeout && timeout != .never
-        case .freeHeavyUse:
-            return timeout <= Settings.heavyUseDatabaseLockTimeout && timeout != .never
-        case .subscribed,
-             .lapsed:
-            return true
-        }
+        return true
     }
 }

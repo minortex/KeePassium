@@ -24,7 +24,7 @@ class AppStoreHelper {
             return
         }
         if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            UIApplication.shared.kp_open(url)
         }
     }
 
@@ -34,7 +34,7 @@ class AppStoreHelper {
             return
         }
         if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            UIApplication.shared.kp_open(url)
         }
     }
 
@@ -46,7 +46,7 @@ class AppStoreHelper {
         }
         let application = UIApplication.shared
         if application.canOpenURL(url) {
-            application.open(url, options: [:])
+            application.kp_open(url)
         }
     }
     #endif

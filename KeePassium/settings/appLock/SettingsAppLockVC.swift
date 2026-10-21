@@ -27,8 +27,6 @@ class SettingsAppLockVC: UITableViewController, Refreshable {
     private var passcodeInputVC: PasscodeInputVC?
     private var isInitialPasscodeSetup = true
     
-    private var premiumUpgradeHelper = PremiumUpgradeHelper()
-    
     private enum Sections: Int {
         static let allValues: [Sections] = [.passcode, .biometrics, .timeout, .protectDatabases]
         case passcode = 0
@@ -45,11 +43,6 @@ class SettingsAppLockVC: UITableViewController, Refreshable {
         changePasscodeCell.textLabel?.text = LString.actionChangePasscode
         
         settingsNotifications = SettingsNotifications(observer: self)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(refreshPremiumStatus),
-            name: PremiumManager.statusUpdateNotification,
-            object: nil)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -75,14 +68,15 @@ class SettingsAppLockVC: UITableViewController, Refreshable {
             Settings.current.isBiometricAppLockEnabled = false
         }
         
-        let biometryTypeName = context.biometryType.name ?? "Touch ID/Face ID"
+        let biometryType = LAContext.getBiometryType()
+        let biometryTypeName = biometryType.name ?? "Touch ID"
         allowBiometricsLabel.text = String.localizedStringWithFormat(
             NSLocalizedString(
                 "[Settings/AppLock/Biometric/title] Use %@",
                 value: "Use %@",
                 comment: "Settings switch: whether AppLock is allowed to use Touch ID/Face ID. Example: 'Use Touch ID'. [biometryTypeName: String]"),
             biometryTypeName)
-        biometricsIcon.image = context.biometryType.icon
+        biometricsIcon.image = biometryType.icon
     }
     
     func refresh() {
@@ -92,7 +86,7 @@ class SettingsAppLockVC: UITableViewController, Refreshable {
         changePasscodeCell.setEnabled(isAppLockEnabled)
         appLockTimeoutCell.detailTextLabel?.text = settings.appLockTimeout.shortTitle
         lockDatabasesOnFailedPasscodeSwitch.isOn = settings.isLockAllDatabasesOnFailedPasscode
-        biometricsSwitch.isOn = settings.premiumIsBiometricAppLockEnabled
+        biometricsSwitch.isOn = settings.isBiometricAppLockEnabled
         
         appLockTimeoutCell.setEnabled(isAppLockEnabled)
         lockDatabasesOnFailedPasscodeCell.setEnabled(isAppLockEnabled)
@@ -100,11 +94,6 @@ class SettingsAppLockVC: UITableViewController, Refreshable {
         biometricsSwitch.isEnabled = isAppLockEnabled && isBiometricsSupported
     }
 
-    @objc func refreshPremiumStatus() {
-        refresh()
-    }
-    
-    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let selectedCell = tableView.cellForRow(at: indexPath) else { return }

@@ -39,26 +39,18 @@ public class UsageMonitor {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(startInterval),
-            name: UIApplication.didBecomeActiveNotification,
+            name: Notification.Name(rawValue: UIApplicationDidBecomeActiveNotification),
             object: nil)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(stopInterval),
-            name: UIApplication.willResignActiveNotification,
+            name: Notification.Name(rawValue: UIApplicationWillResignActiveNotification),
             object: nil)
         cleanupObsoleteData()
     }
     
     public var isEnabled: Bool {
-        switch PremiumManager.shared.status {
-        case .initialGracePeriod,
-             .subscribed:
-            return false
-        case .lapsed, 
-             .freeLightUse,
-             .freeHeavyUse:
-            return true
-        }
+        return false
     }
     
     

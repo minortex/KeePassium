@@ -31,18 +31,12 @@ class SettingsDataProtectionVC: UITableViewController, Refreshable {
     @IBOutlet weak var hideProtectedFieldsSwitch: UISwitch!
     
     private var settingsNotifications: SettingsNotifications!
-    private var premiumUpgradeHelper = PremiumUpgradeHelper()
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         clearsSelectionOnViewWillAppear = true
         settingsNotifications = SettingsNotifications(observer: self)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(refreshPremiumStatus),
-            name: PremiumManager.statusUpdateNotification,
-            object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -63,28 +57,17 @@ class SettingsDataProtectionVC: UITableViewController, Refreshable {
         rememberFinalKeysSwitch.isEnabled = settings.isRememberDatabaseKey
         rememberFinalKeysSwitch.isOn = settings.isRememberDatabaseFinalKey
         
-        rememberUsedKeyFiles.isOn = settings.premiumIsKeepKeyFileAssociations
+        rememberUsedKeyFiles.isOn = settings.isKeepKeyFileAssociations
         universalClipboardSwitch.isOn = settings.isUniversalClipboardEnabled
         hideProtectedFieldsSwitch.isOn = settings.isHideProtectedFields
-        databaseTimeoutCell.detailTextLabel?.text = settings.premiumDatabaseLockTimeout.shortTitle
+        databaseTimeoutCell.detailTextLabel?.text = settings.databaseLockTimeout.shortTitle
         
-        lockDatabaseOnTimeoutSwitch.isOn = settings.premiumIsLockDatabasesOnTimeout
-        let canKeepMasterKeyOnDatabaseTimeout =
-            PremiumManager.shared.isAvailable(feature: .canKeepMasterKeyOnDatabaseTimeout)
-        lockDatabaseOnTimeoutPremiumBadge.isHidden = canKeepMasterKeyOnDatabaseTimeout
-        lockDatabaseOnTimeoutLabel.accessibilityLabel =
-            AccessibilityHelper.decorateAccessibilityLabel(
-                premiumFeature: lockDatabaseOnTimeoutLabel.text,
-                isEnabled: canKeepMasterKeyOnDatabaseTimeout
-            )
+        lockDatabaseOnTimeoutSwitch.isOn = settings.isLockDatabasesOnTimeout
+        lockDatabaseOnTimeoutPremiumBadge.isHidden = true
+        lockDatabaseOnTimeoutLabel.accessibilityLabel = lockDatabaseOnTimeoutLabel.text
         
         clipboardTimeoutCell.detailTextLabel?.text = settings.clipboardTimeout.shortTitle
     }
-    
-    @objc func refreshPremiumStatus() {
-        refresh()
-    }
-    
     
     @IBAction func didToggleRememberMasterKeys(_ sender: UISwitch) {
         let isRemember = rememberMasterKeysSwitch.isOn
@@ -147,13 +130,7 @@ class SettingsDataProtectionVC: UITableViewController, Refreshable {
     }
     
     @IBAction func didToggleLockDatabasesOnTimeoutSwitch(_ sender: UISwitch) {
-        premiumUpgradeHelper.performActionOrOfferUpgrade(
-            .canKeepMasterKeyOnDatabaseTimeout,
-            in: self,
-            actionHandler: { [sender] in
-                Settings.current.isLockDatabasesOnTimeout = sender.isOn
-            }
-        )
+        Settings.current.isLockDatabasesOnTimeout = sender.isOn
         refresh()
     }
     

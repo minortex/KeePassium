@@ -41,12 +41,18 @@ class FieldCopiedView: UIView {
             completion: { [weak self] finished in
                 guard let self = self else { return }
                 tableView.deselectRow(at: indexPath, animated: false)
-                self.hidingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) {
-                    [weak self] _ in
-                    self?.hide(animated: true)
-                }
+                self.hidingTimer = Timer.scheduledTimer(
+                    timeInterval: 0.5,
+                    target: self,
+                    selector: #selector(self.hideCopiedView),
+                    userInfo: nil,
+                    repeats: false)
             }
         )
+    }
+
+    @objc private func hideCopiedView() {
+        hide(animated: true)
     }
     
     public func hide(animated: Bool) {
@@ -83,15 +89,11 @@ class FieldCopiedView: UIView {
 class ViewEntryFieldsVC: UITableViewController, Refreshable {
     @IBOutlet weak var copiedCellView: FieldCopiedView!
     
-    private let editButton = UIBarButtonItem()
-
     private weak var entry: Entry?
     private var isHistoryMode = false
     private var sortedFields: [ViewableField] = []
     private var entryChangeNotifications: EntryChangeNotifications!
     
-    private var entryFieldEditorCoordinator: EntryFieldEditorCoordinator?
-
     static func make(with entry: Entry?, historyMode: Bool) -> ViewEntryFieldsVC {
         let viewEntryFieldsVC = ViewEntryFieldsVC.instantiateFromStoryboard()
         viewEntryFieldsVC.entry = entry
@@ -108,24 +110,14 @@ class ViewEntryFieldsVC: UITableViewController, Refreshable {
 
         copiedCellView.delegate = self
         
-        editButton.title = LString.actionEdit
-        editButton.target = self
-        editButton.action = #selector(didPressEdit)
-        editButton.accessibilityIdentifier = "edit_entry_button" 
-
         entryChangeNotifications = EntryChangeNotifications(observer: self)
         entry?.touch(.accessed)
         refresh()
     }
 
-    deinit {
-        entryFieldEditorCoordinator = nil
-    }
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        editButton.isEnabled = !(entry?.isDeleted ?? true)
-        navigationItem.rightBarButtonItem = isHistoryMode ? nil : editButton
+        navigationItem.rightBarButtonItem = nil
         entryChangeNotifications.startObserving()
         refresh()
     }
@@ -149,37 +141,6 @@ class ViewEntryFieldsVC: UITableViewController, Refreshable {
         }
         tableView.reloadData()
     }
-    
-    
-    @objc func didPressEdit() {
-        assert(entryFieldEditorCoordinator == nil)
-        guard let entry = entry,
-              let parent = entry.parent,
-              let database = parent.database
-        else {
-            Diag.warning("Entry, parent group or database are undefined")
-            assertionFailure()
-            return
-        }
-        
-        let modalRouter = NavigationRouter.createModal(style: .formSheet, at: nil)
-        let entryFieldEditorCoordinator = EntryFieldEditorCoordinator(
-            router: modalRouter,
-            database: database,
-            parent: parent,
-            target: entry
-        )
-        entryFieldEditorCoordinator.dismissHandler = { [weak self] coordinator in
-            self?.entryFieldEditorCoordinator = nil
-        }
-        entryFieldEditorCoordinator.delegate = self
-        entryFieldEditorCoordinator.start()
-        modalRouter.dismissAttemptDelegate = entryFieldEditorCoordinator
-        self.entryFieldEditorCoordinator = entryFieldEditorCoordinator
-        present(modalRouter, animated: true, completion: nil)
-    }
-    
-
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -288,11 +249,5 @@ extension ViewEntryFieldsVC: FieldCopiedViewDelegate {
         let popoverAnchor = PopoverAnchor(sourceView: view, sourceRect: view.bounds)
         popoverAnchor.apply(to: activityController.popoverPresentationController)
         present(activityController, animated: true)
-    }
-}
-
-extension ViewEntryFieldsVC: EntryFieldEditorCoordinatorDelegate {
-    func didUpdateEntry(_ entry: Entry, in coordinator: EntryFieldEditorCoordinator) {
-        refresh()
     }
 }

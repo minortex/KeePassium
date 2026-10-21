@@ -36,7 +36,6 @@ enum ImageAsset: String {
     case hideListitem = "hide-listitem"
     case unhideListitem = "unhide-listitem"
     case biometryTouchIDListitem = "touch-id-listitem"
-    case biometryFaceIDListitem = "face-id-listitem"
     case premiumFeatureBadge = "premium-feature-badge"
     case premiumBenefitMultiDB = "premium-benefit-multidb"
     case premiumBenefitDBTimeout = "premium-benefit-db-timeout"
@@ -78,7 +77,7 @@ extension UIImage {
         if #available(iOS 13, *) {
             return UIImage(systemName: systemImageName.rawValue)
         } else {
-            return UIImage(named: systemImageName.rawValue)
+            return nil
         }
     }
     

@@ -35,6 +35,46 @@ public final class Argon2 {
         }
     }
     
+    private final class CancellationState {
+        var isAbortProcessing: UInt8 = 0
+    }
+
+    private final class CancellationObserver: NSObject {
+        private let progress: Progress
+        private let state: CancellationState
+
+        init(progress: Progress, state: CancellationState) {
+            self.progress = progress
+            self.state = state
+            super.init()
+            progress.addObserver(
+                self,
+                forKeyPath: "isCancelled",
+                options: [.new],
+                context: nil
+            )
+        }
+
+        func stop() {
+            progress.removeObserver(
+                self,
+                forKeyPath: "isCancelled"
+            )
+        }
+
+        override func observeValue(
+            forKeyPath keyPath: String?,
+            of object: Any?,
+            change: [NSKeyValueChangeKey: Any]?,
+            context: UnsafeMutableRawPointer?
+        ) {
+            if progress.cancellationReason == .lowMemoryWarning {
+                FLAG_clear_internal_memory = 0
+            }
+            state.isAbortProcessing = 1
+        }
+    }
+
     private init() {
     }
     
@@ -46,20 +86,13 @@ public final class Argon2 {
         ) throws -> ByteArray
     {
 
-        var isAbortProcessing: UInt8 = 0
+        let cancellationState = CancellationState()
         
         progress?.totalUnitCount = Int64(params.iterations)
         progress?.completedUnitCount = 0
-        let progressKVO = progress?.observe(
-            \.isCancelled,
-            options: [.new],
-            changeHandler: { (progress, _) in
-                if progress.cancellationReason == .lowMemoryWarning {
-                    FLAG_clear_internal_memory = 0
-                }
-                isAbortProcessing = 1
-            }
-        )
+        let cancellationObserver = progress.map {
+            CancellationObserver(progress: $0, state: cancellationState)
+        }
         
         let progressCallback: progress_fptr!   
         let progressObject: UnsafeRawPointer?  
@@ -97,11 +130,11 @@ public final class Argon2 {
                     params.version,     
                     progressCallback,   
                     progressObject,     
-                    &isAbortProcessing  
+                    &cancellationState.isAbortProcessing
                 )
             }
         }
-        progressKVO?.invalidate()
+        cancellationObserver?.stop()
         if let progress = progress {
             progress.completedUnitCount = Int64(params.iterations) 
             if progress.isCancelled {

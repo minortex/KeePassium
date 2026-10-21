@@ -63,9 +63,6 @@ public class Settings {
         case rememberDatabaseKey
         case rememberDatabaseFinalKey
         case keepKeyFileAssociations
-        case keepHardwareKeyAssociations
-        case hardwareKeyAssociations
-
         case appLockEnabled
         case biometricAppLockEnabled
         case lockAllDatabasesOnFailedPasscode
@@ -750,7 +747,7 @@ public class Settings {
             {
                 return storedTimestamp
             } else {
-                let firstLaunchTimestamp = Date.now
+                let firstLaunchTimestamp = Date()
                 UserDefaults.appGroupShared.set(
                     firstLaunchTimestamp,
                     forKey: Keys.firstLaunchTimestamp.rawValue)
@@ -762,7 +759,7 @@ public class Settings {
 #if DEBUG
     public func resetFirstLaunchTimestampToNow() {
         UserDefaults.appGroupShared.set(
-            Date.now,
+            Date(),
             forKey: Keys.firstLaunchTimestamp.rawValue)
     }
 #endif
@@ -888,27 +885,6 @@ public class Settings {
         }
     }
     
-    public var isKeepHardwareKeyAssociations: Bool {
-        get {
-            if contains(key: Keys.keepHardwareKeyAssociations) {
-                return UserDefaults.appGroupShared.bool(forKey: Keys.keepHardwareKeyAssociations.rawValue)
-            } else {
-                return true
-            }
-        }
-        set {
-            let oldValue = isKeepHardwareKeyAssociations
-            UserDefaults.appGroupShared.set(newValue, forKey: Keys.keepHardwareKeyAssociations.rawValue)
-            if !newValue {
-                DatabaseSettingsManager.shared.forgetAllHardwareKeys()
-            }
-            if newValue != oldValue {
-                postChangeNotification(changedKey: Keys.keepHardwareKeyAssociations)
-            }
-        }
-    }
-    
-    
     public var isAppLockEnabled: Bool {
         get {
             let hasPasscode = try? Keychain.shared.isAppPasscodeSet() 
@@ -958,7 +934,7 @@ public class Settings {
             {
                 return storedTimestamp
             }
-            return Date.now
+            return Date()
         }
         set {
             if contains(key: Keys.recentUserActivityTimestamp) {
@@ -1501,15 +1477,9 @@ public class Settings {
         #if DEBUG
         isTestEnvironment = true
         #else
-        if AppGroup.isMainApp {
-            let lastPathComp = Bundle.main.appStoreReceiptURL?.lastPathComponent
-            isTestEnvironment = lastPathComp == "sandboxReceipt"
-            UserDefaults.appGroupShared.set(isTestEnvironment, forKey: Keys.testEnvironment.rawValue)
-        } else {
-            isTestEnvironment = UserDefaults.appGroupShared
-                .object(forKey: Keys.testEnvironment.rawValue) as? Bool
-                ?? false
-        }
+        let lastPathComp = Bundle.main.appStoreReceiptURL?.lastPathComponent
+        isTestEnvironment = lastPathComp == "sandboxReceipt"
+        UserDefaults.appGroupShared.set(isTestEnvironment, forKey: Keys.testEnvironment.rawValue)
         #endif
         
         let versionInfo = UserDefaults.appGroupShared

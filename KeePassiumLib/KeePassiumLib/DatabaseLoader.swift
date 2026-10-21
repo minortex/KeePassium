@@ -97,19 +97,16 @@ public class DatabaseLoader: ProgressObserver {
     
     private var backgroundTask: UIBackgroundTaskIdentifier?
     private func startBackgroundTask() {
-        guard let appShared = AppGroup.applicationShared else { return }
-        
         print("Starting background task")
-        backgroundTask = appShared.beginBackgroundTask(withName: "DatabaseLoading") {
+        backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "DatabaseLoading", expirationHandler: {
             Diag.warning("Background task expired, loading cancelled")
             self.progress.cancel()
             self.endBackgroundTask()
-        }
+        })
         startTime = Date.now
     }
     
     private func endBackgroundTask() {
-        guard let appShared = AppGroup.applicationShared else { return }
         if let startTime = startTime {
             let duration = Date.now.timeIntervalSince(startTime)
             print(String(format: "Done in %.2f s", arguments: [duration]))
@@ -118,7 +115,7 @@ public class DatabaseLoader: ProgressObserver {
         guard let bgTask = backgroundTask else { return }
         print("ending background task")
         backgroundTask = nil
-        appShared.endBackgroundTask(bgTask)
+        UIApplication.shared.endBackgroundTask(bgTask)
     }
     
     
@@ -156,6 +153,34 @@ public class DatabaseLoader: ProgressObserver {
     }
     
     private func onDatabaseURLResolved(url: URL, fileProvider: FileProvider?) {
+        if dbRef.location == .remote {
+            progress.status = LString.Progress.loadingDatabaseFile
+            FileKeeper.shared.readRemoteFile(url) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success(let data):
+                    let dbDoc = DatabaseDocument(
+                        fileURL: url,
+                        fileProvider: .keepassiumWebDAV
+                    )
+                    dbDoc.data = data
+                    self.onDatabaseDocumentOpened(dbDoc: dbDoc, data: data)
+                case .failure(let fileAccessError):
+                    Diag.error("Failed to read remote database [error: \(fileAccessError.localizedDescription)]")
+                    self.stopObservingProgress()
+                    self.delegate?.databaseLoader(
+                        self,
+                        didFailLoading: self.dbRef,
+                        message: LString.Error.cannotOpenDatabaseFile,
+                        reason: fileAccessError.localizedDescription
+                    )
+                    self.delegate?.databaseLoaderDidFinish(self, for: self.dbRef, withResult: nil)
+                    self.endBackgroundTask()
+                }
+            }
+            return
+        }
+
         let dbDoc = DatabaseDocument(fileURL: url, fileProvider: fileProvider)
         progress.status = LString.Progress.loadingDatabaseFile
         dbDoc.open(queue: operationQueue) { [weak self] (result) in
@@ -332,7 +357,7 @@ public class DatabaseLoader: ProgressObserver {
             progress.addChild(db.initProgress(), withPendingUnitCount: remainingUnitCount)
             Diag.info("Loading database")
             try db.load(
-                dbFileName: dbDoc.fileURL.lastPathComponent,
+                dbFileName: dbRef.displayFileName,
                 dbFileData: dbDoc.data,
                 compositeKey: compositeKey,
                 warnings: warnings)

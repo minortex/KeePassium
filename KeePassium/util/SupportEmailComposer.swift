@@ -77,11 +77,7 @@ class SupportEmailComposer: NSObject {
             return betaSupportEmail
         }
         
-        if PremiumManager.shared.isPremiumSupportAvailable() {
-            return premiumSupportEmail
-        } else {
-            return freeSupportEmail
-        }
+        return freeSupportEmail
     }
     
     private func showEmailComposer() {
@@ -114,7 +110,7 @@ class SupportEmailComposer: NSObject {
             showExportSheet(for: url, completion: self.completionHandler)
             return
         }
-        app.open(url, options: [:]) { success in 
+        app.kp_open(url) { success in
             if success {
                 self.completionHandler?(success)
             } else {

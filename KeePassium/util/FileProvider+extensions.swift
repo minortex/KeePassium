@@ -39,6 +39,8 @@ extension FileProvider {
             return UIImage(named: "fp-synology-drive-listitem")
         case .usbDrive:
             return UIImage(named: "fp-usb-drive-listitem")
+        case .keepassiumWebDAV:
+            return UIImage(asset: .fileProviderGenericListitem)
         case .amerigo:        fallthrough
         case .amerigoFree:    fallthrough
         case .feFileExplorer: fallthrough

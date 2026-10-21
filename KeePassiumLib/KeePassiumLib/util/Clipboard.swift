@@ -7,7 +7,6 @@
 //  For commercial licensing, please contact the author.
 
 import UIKit
-import MobileCoreServices
 
 public class Clipboard {
 
@@ -21,29 +20,14 @@ public class Clipboard {
     
     public func insert(url: URL, timeout: Double?=nil) {
         Diag.debug("Inserted a URL to clipboard")
-        insert(items: [[(kUTTypeURL as String) : url]], timeout: timeout)
+        UIPasteboard.general.url = url
         insertedURL = url
     }
     
     public func insert(text: String, timeout: Double?=nil) {
         Diag.debug("Inserted a string to clipboard")
-        insert(items: [[(kUTTypeUTF8PlainText as String) : text]], timeout: timeout)
+        UIPasteboard.general.string = text
         insertedText = text
-    }
-    
-    private func insert(items: [[String: Any]], timeout: Double?) {
-        let isLocalOnly = !Settings.current.isUniversalClipboardEnabled
-        if let timeout = timeout, timeout > 0.0 {
-            UIPasteboard.general.setItems(
-                items,
-                options: [
-                    .localOnly: isLocalOnly,
-                    .expirationDate: Date(timeIntervalSinceNow: timeout)
-                ]
-            )
-        } else {
-            UIPasteboard.general.setItems(items, options: [.localOnly: isLocalOnly])
-        }
     }
     
     public func clear() {
@@ -58,7 +42,7 @@ public class Clipboard {
         }
         
         if containsOurStuff {
-            pasteboard.setItems([[:]], options: [.localOnly: true])
+            pasteboard.string = ""
             self.insertedText = nil
             self.insertedURL = nil
             Diag.info("Clipboard content cleared")

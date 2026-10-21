@@ -32,40 +32,6 @@ class TableViewControllerWithContextActions: UITableViewController {
         return rowActions.count > 0
     }
     
-    override func tableView(
-        _ tableView: UITableView,
-        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
-    ) -> UISwipeActionsConfiguration? {
-        let swipeActions = getContextActionsForRow(at: indexPath, forSwipe: true)
-            .sorted { ($0.style == .destructive) && ($0.style != $1.style) }
-            .map { $0.toContextualAction(tableView: tableView) }
-        guard swipeActions.count > 0 else {
-            return nil
-        }
-        return UISwipeActionsConfiguration(actions: swipeActions)
-    }
-    
-    
-    @available(iOS 13, *)
-    override func tableView(
-        _ tableView: UITableView,
-        contextMenuConfigurationForRowAt indexPath: IndexPath,
-        point: CGPoint
-    ) -> UIContextMenuConfiguration? {
-        let menuActions = getContextActionsForRow(at: indexPath, forSwipe: false)
-            .map { $0.toMenuAction() }
-        
-        guard menuActions.count > 0 else {
-            return nil
-        }
-        
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) {
-            (suggestedActions) in
-            return UIMenu(title: "", children: menuActions)
-        }
-    }
-    
-    
     @objc func didLongPressTableView(_ gestureRecognizer: UILongPressGestureRecognizer) {
         let point = gestureRecognizer.location(in: tableView)
         guard gestureRecognizer.state == .began,

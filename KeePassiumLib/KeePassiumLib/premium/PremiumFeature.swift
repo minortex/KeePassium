@@ -11,7 +11,7 @@ public enum PremiumFeature: Int {
         .canUseMultipleDatabases, 
         .canUseLongDatabaseTimeouts, 
         .canPreviewAttachments, 
-        .canUseHardwareKeys,    
+        .canUseHardwareKeys,
         .canKeepMasterKeyOnDatabaseTimeout, 
         .canChangeAppIcon,
         .canViewFieldReferences
@@ -32,7 +32,7 @@ public enum PremiumFeature: Int {
     case canUseLongDatabaseTimeouts = 2
     
     case canPreviewAttachments = 3
-    
+
     case canUseHardwareKeys = 4
     
     case canKeepMasterKeyOnDatabaseTimeout = 5
@@ -44,33 +44,11 @@ public enum PremiumFeature: Int {
     case canViewFieldReferences = 8
     
     public func isAvailable(in status: PremiumManager.Status, fallbackDate: Date?) -> Bool {
-        let isEntitled = status == .subscribed ||
-            status == .lapsed ||
-            wasAvailable(before: fallbackDate)
-        
         switch self {
-        case .canUseMultipleDatabases,
-             .canUseLongDatabaseTimeouts,
-             .canUseHardwareKeys,
-             .canKeepMasterKeyOnDatabaseTimeout,
-             .canChangeAppIcon,
-             .canViewFieldReferences:
-            return isEntitled
-        case .canPreviewAttachments:
-            return isEntitled || (status != .freeHeavyUse)
-        case .canUseExpressUnlock:
-            return true 
-        }
-    }
-    
-    private func wasAvailable(before fallbackDate: Date?) -> Bool {
-        guard let date = fallbackDate else {
+        case .canUseHardwareKeys:
             return false
+        default:
+            return true
         }
-        guard let introductionDate = PremiumFeature.introductionDate[self] else {
-            assertionFailure("No introduction date for the feature \(self)")
-            return false
-        }
-        return date > introductionDate
     }
 }

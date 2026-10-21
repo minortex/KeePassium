@@ -10,4 +10,20 @@ import UIKit
 
 public class DatabaseDocument: BaseDocument {
     var database: Database?
+
+    public override func save(
+        _ completion: @escaping ((Result<Void, FileAccessError>) -> Void)
+    ) {
+        completion(.failure(.targetFileIsReadOnly(fileProvider: fileProvider ?? .localStorage)))
+    }
+
+    public override func close(
+        _ completion: @escaping ((Result<Void, FileAccessError>) -> Void)
+    ) {
+        if fileProvider == .keepassiumWebDAV {
+            completion(.success)
+        } else {
+            super.close(completion)
+        }
+    }
 }

@@ -28,7 +28,7 @@ public class URLReference:
     
     public enum Location: Int, Codable, CustomStringConvertible {
         public static let allValues: [Location] =
-            [.internalDocuments, .internalBackup, .internalInbox, .external]
+            [.internalDocuments, .internalBackup, .internalInbox, .external, .remote]
         
         public static let allInternal: [Location] =
             [.internalDocuments, .internalBackup, .internalInbox]
@@ -37,9 +37,15 @@ public class URLReference:
         case internalBackup = 1
         case internalInbox = 2
         case external = 100
+        case remote = 200
         
         public var isInternal: Bool {
-            return self != .external
+            switch self {
+            case .internalDocuments, .internalBackup, .internalInbox:
+                return true
+            case .external, .remote:
+                return false
+            }
         }
         
         public var description: String {
@@ -68,15 +74,22 @@ public class URLReference:
                     bundle: Bundle.framework,
                     value: "Cloud storage / Another app",
                     comment: "Human-readable file location. The file is situated either online / in cloud storage, or on the same device, but in some other app. Example: 'File Location: Cloud storage / Another app'")
+            case .remote:
+                return NSLocalizedString(
+                    "[URLReference/Location] Remote server",
+                    bundle: Bundle.framework,
+                    value: "Remote server",
+                    comment: "Human-readable file location. Example: 'File Location: Remote server'")
             }
         }
     }
     
     public static let defaultTimeout: TimeInterval = 15.0
     
-    public var visibleFileName: String { return url?.lastPathComponent ?? "?" }
+    public var visibleFileName: String { return displayFileName }
     
     public private(set) var error: FileAccessError?
+    public var isReadOnly: Bool { return true }
     public var hasError: Bool { return error != nil}
     
     public var hasPermissionError257: Bool {
@@ -92,16 +105,14 @@ public class URLReference:
         #if targetEnvironment(macCatalyst)
             switch nsError.domain {
             case NSCocoaErrorDomain:
-                return nsError.code == CocoaError.Code.fileNoSuchFile.rawValue
+                return nsError.code == 260
             default:
                 return false
             }
         #else
             switch nsError.domain {
             case NSCocoaErrorDomain:
-                return nsError.code == CocoaError.Code.fileNoSuchFile.rawValue
-            case NSFileProviderErrorDomain:
-                return nsError.code == NSFileProviderError.noSuchItem.rawValue
+                return nsError.code == 260
             default:
                 return false
             }
@@ -119,8 +130,15 @@ public class URLReference:
         return bookmarkedURL ?? cachedURL
     }
 
-    internal var url: URL? {
+    public var url: URL? {
         return resolvedURL ?? cachedURL ?? bookmarkedURL
+    }
+
+    public var displayFileName: String {
+        if location == .remote {
+            return originalURL?.lastPathComponent ?? "?"
+        }
+        return url?.lastPathComponent ?? "?"
     }
     
     
@@ -153,6 +171,15 @@ public class URLReference:
     
     
     public init(from url: URL, location: Location) throws {
+        if location == .remote {
+            self.location = location
+            self.data = Data()
+            self.cachedURL = WebDAVFileURL.canonicalize(url)
+            self.bookmarkedURL = self.cachedURL
+            self.fileProvider = .keepassiumWebDAV
+            return
+        }
+
         let isAccessed = url.startAccessingSecurityScopedResource()
         defer {
             if isAccessed {
@@ -162,14 +189,12 @@ public class URLReference:
         cachedURL = url
         bookmarkedURL = url
         self.location = location
-        if location.isInternal {
-            data = Data() 
-        } else {
-            data = try url.bookmarkData(
+        self.data = location.isInternal
+            ? Data()
+            : try url.bookmarkData(
                 options: URLReference.getBookmarkCreationOptions(),
                 includingResourceValuesForKeys: nil,
-                relativeTo: nil) 
-        }
+                relativeTo: nil)
         processReference()
     }
 
@@ -229,6 +254,10 @@ public class URLReference:
         location: URLReference.Location,
         completion callback: @escaping CreateCallback)
     {
+        if location == .remote {
+            tryCreate(for: url, location: location, callbackOnError: true, callback: callback)
+            return
+        }
         let isAccessed = url.startAccessingSecurityScopedResource()
         defer {
             if isAccessed {
@@ -289,7 +318,7 @@ public class URLReference:
         callback: @escaping ResolveCallback)
     {
         execute(
-            withTimeout: URLReference.defaultTimeout,
+            withTimeout: timeout,
             on: URLReference.backgroundQueue,
             slowSyncOperation: { () -> Result<URL, Error> in
                 do {
@@ -366,6 +395,11 @@ public class URLReference:
         timeout: TimeInterval = URLReference.defaultTimeout,
         completion callback: @escaping InfoCallback)
     {
+        if location == .remote {
+            refreshRemoteInfo(timeout: timeout, completion: callback)
+            return
+        }
+
         registerInfoRefreshRequest(.added)
         resolveAsync(timeout: timeout) {
             [self] (result) in 
@@ -378,6 +412,38 @@ public class URLReference:
                 self.registerInfoRefreshRequest(.completed)
                 self.error = error
                 callback(.failure(error))
+            }
+        }
+    }
+
+    private func refreshRemoteInfo(
+        timeout: TimeInterval,
+        completion callback: @escaping InfoCallback
+    ) {
+        guard let remoteURL = originalURL,
+              let credential = CredentialManager.shared.get(for: remoteURL)
+        else {
+            let error = FileAccessError.noInfoAvailable
+            self.error = error
+            callback(.failure(error))
+            return
+        }
+        registerInfoRefreshRequest(.added)
+        WebDAVClient.shared.getFileInfo(
+            url: WebDAVFileURL.getNakedURL(from: remoteURL),
+            credential: credential,
+            timeout: timeout
+        ) { [weak self] result in
+            guard let self = self else { return }
+            self.registerInfoRefreshRequest(.completed)
+            switch result {
+            case .success(let fileInfo):
+                self.cachedInfo = fileInfo
+                self.error = nil
+                callback(.success(fileInfo))
+            case .failure(let fileAccessError):
+                self.error = fileAccessError
+                callback(.failure(fileAccessError))
             }
         }
     }
@@ -450,6 +516,10 @@ public class URLReference:
     
     
     public func resolveSync() throws -> URL {
+        if location == .remote, let remoteURL = originalURL {
+            return remoteURL
+        }
+
         if location.isInternal, let cachedURL = self.cachedURL {
             return cachedURL
         }
@@ -465,6 +535,9 @@ public class URLReference:
     }
     
     public func getDescriptor() -> Descriptor? {
+        if location == .remote {
+            return cachedURL?.lastPathComponent
+        }
         if let resolvedFileName = resolvedURL?.lastPathComponent {
             return resolvedFileName
         }
@@ -512,6 +585,11 @@ public class URLReference:
     
     
     fileprivate func processReference() {
+        if location == .remote {
+            fileProvider = .keepassiumWebDAV
+            return
+        }
+
         guard !data.isEmpty else {
             if location.isInternal {
                 fileProvider = .localStorage

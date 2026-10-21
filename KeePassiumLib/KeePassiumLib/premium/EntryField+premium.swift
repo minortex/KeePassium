@@ -14,10 +14,6 @@ public extension EntryField {
         guard hasReferences else {
             return resolvedValue
         }
-        if PremiumManager.shared.isAvailable(feature: .canViewFieldReferences) {
-            return "→ " + resolvedValue
-        } else {
-            return value + " ⭐️" 
-        }
+        return "→ " + resolvedValue
     }
 }
