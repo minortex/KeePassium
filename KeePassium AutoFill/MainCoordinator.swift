@@ -82,7 +82,6 @@ class MainCoordinator: NSObject, Coordinator {
 
         let premiumManager = PremiumManager.shared
         premiumManager.reloadReceipt()
-        premiumManager.usageMonitor.startInterval()
 
         let pageView = pageController.view!
         rootController.view.addSubview(pageView)
@@ -116,7 +115,6 @@ class MainCoordinator: NSObject, Coordinator {
     }
     
     func cleanup() {
-        PremiumManager.shared.usageMonitor.stopInterval()
         DatabaseManager.shared.removeObserver(self)
         DatabaseManager.shared.closeDatabase(
             clearStoredKey: false,

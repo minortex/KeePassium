@@ -33,7 +33,6 @@ public final class PremiumManager {
         Notification.Name("com.keepassium.premiumManager.statusUpdated")
 
     public let status = Status.subscribed
-    public let usageMonitor = UsageMonitor()
     public let fallbackDate: Date? = Date.distantFuture
     public let isTrialAvailable = false
 

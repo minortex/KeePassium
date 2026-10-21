@@ -15,7 +15,7 @@ public class TemporaryFileURL {
     
     public init(fileName: String) throws {
         let fileManager = FileManager.default
-        let tmpFileDir = fileManager.temporaryDirectory
+        let tmpFileDir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         url = tmpFileDir.appendingPathComponent(fileName, isDirectory: false)
         do {
