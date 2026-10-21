@@ -16,7 +16,7 @@ public class DeletedObject2: Eraseable {
     init(database: Database2, uuid: UUID) {
         self.database = database
         self.uuid = uuid
-        self.deletionTime = Date.now
+        self.deletionTime = Date()
     }
     convenience init(database: Database2) {
         self.init(database: database, uuid: UUID.ZERO)
@@ -27,7 +27,7 @@ public class DeletedObject2: Eraseable {
     
     public func erase() {
         uuid.erase()
-        deletionTime = Date.now
+        deletionTime = Date()
     }
     
     func load(xml: AEXMLElement, timeParser: Database2XMLTimeParser) throws {

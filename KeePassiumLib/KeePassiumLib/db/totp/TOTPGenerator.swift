@@ -41,7 +41,7 @@ public protocol TOTPGenerator: class {
 
 extension TOTPGenerator {
     fileprivate func getElapsedTimeFraction(timeStep: Int) -> Float {
-        let now = Date.now.timeIntervalSince1970
+        let now = Date().timeIntervalSince1970
         let _timeStep = Double(timeStep)
         let totpTime = floor(now / _timeStep) * _timeStep
         let result = Float((now - totpTime) / _timeStep)
@@ -92,7 +92,7 @@ public class TOTPGeneratorRFC6238: TOTPGenerator {
 
     
     public func generate() -> String {
-        let counter = UInt64(floor(Date.now.timeIntervalSince1970 / Double(timeStep))).bigEndian
+        let counter = UInt64(floor(Date().timeIntervalSince1970 / Double(timeStep))).bigEndian
         let fullCode = calculateFullCode(
             counterBytes: ByteArray(bytes: counter.bytes),
             seed: seed,
@@ -126,7 +126,7 @@ public class TOTPGeneratorSteam: TOTPGenerator {
     }
     
     public func generate() -> String {
-        let counter = UInt64(floor(Date.now.timeIntervalSince1970 / Double(timeStep))).bigEndian
+        let counter = UInt64(floor(Date().timeIntervalSince1970 / Double(timeStep))).bigEndian
         var code = calculateFullCode(
             counterBytes: ByteArray(bytes: counter.bytes),
             seed: seed,

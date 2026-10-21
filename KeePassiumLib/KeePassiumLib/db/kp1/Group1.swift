@@ -115,9 +115,9 @@ public class Group1: Group {
         
         newEntry.isDeleted = isDeleted
         
-        newEntry.creationTime = Date.now
-        newEntry.lastAccessTime = Date.now
-        newEntry.lastModificationTime = Date.now
+        newEntry.creationTime = Date()
+        newEntry.lastAccessTime = Date()
+        newEntry.lastModificationTime = Date()
         newEntry.expiryTime = Date.kp1Never
         
         newEntry.groupID = self.id
@@ -137,9 +137,9 @@ public class Group1: Group {
         newGroup.iconID = self.iconID
         newGroup.isDeleted = self.isDeleted
         
-        newGroup.creationTime = Date.now
-        newGroup.lastAccessTime = Date.now
-        newGroup.lastModificationTime = Date.now
+        newGroup.creationTime = Date()
+        newGroup.lastAccessTime = Date()
+        newGroup.lastModificationTime = Date()
         newGroup.expiryTime = Date.kp1Never
         
         newGroup.level = self.level + 1

@@ -109,24 +109,24 @@ final class Meta2: Eraseable {
         self.database = database
         generator = ""
         headerHash = nil
-        settingsChangedTime = Date.now
+        settingsChangedTime = Date()
         databaseName = ""
-        databaseNameChangedTime = Date.now
+        databaseNameChangedTime = Date()
         databaseDescription = ""
-        databaseDescriptionChangedTime = Date.now
+        databaseDescriptionChangedTime = Date()
         defaultUserName = ""
-        defaultUserNameChangedTime = Date.now
+        defaultUserNameChangedTime = Date()
         maintenanceHistoryDays = Meta2.defaultMaintenanceHistoryDays
         colorString = ""
-        masterKeyChangedTime = Date.now
+        masterKeyChangedTime = Date()
         masterKeyChangeRec = Int64(-1)
         masterKeyChangeForce = Int64(-1)
         memoryProtection = MemoryProtection()
         isRecycleBinEnabled = true
         recycleBinGroupUUID = UUID.ZERO
-        recycleBinChangedTime = Date.now
+        recycleBinChangedTime = Date()
         entryTemplatesGroupUUID = UUID.ZERO
-        entryTemplatesGroupChangedTime = Date.now
+        entryTemplatesGroupChangedTime = Date()
         historyMaxItems = Meta2.defaultHistoryMaxItems
         historyMaxSize = Meta2.defaultHistoryMaxSize
         lastSelectedGroupUUID = UUID.ZERO
@@ -141,24 +141,24 @@ final class Meta2: Eraseable {
     func erase() {
         generator.erase()
         headerHash?.erase()
-        settingsChangedTime = Date.now
+        settingsChangedTime = Date()
         databaseName.erase()
-        databaseNameChangedTime = Date.now
+        databaseNameChangedTime = Date()
         databaseDescription.erase()
-        databaseDescriptionChangedTime = Date.now
+        databaseDescriptionChangedTime = Date()
         defaultUserName.erase()
-        defaultUserNameChangedTime = Date.now
+        defaultUserNameChangedTime = Date()
         maintenanceHistoryDays = Meta2.defaultMaintenanceHistoryDays
         colorString.erase()
-        masterKeyChangedTime = Date.now
+        masterKeyChangedTime = Date()
         masterKeyChangeRec = Int64(-1)
         masterKeyChangeForce = Int64(-1)
         memoryProtection.erase()
         isRecycleBinEnabled = true
         recycleBinGroupUUID.erase()
-        recycleBinChangedTime = Date.now
+        recycleBinChangedTime = Date()
         entryTemplatesGroupUUID.erase()
-        entryTemplatesGroupChangedTime = Date.now
+        entryTemplatesGroupChangedTime = Date()
         historyMaxItems = Meta2.defaultHistoryMaxItems
         historyMaxSize = Meta2.defaultHistoryMaxSize
         lastSelectedGroupUUID.erase()
@@ -194,7 +194,7 @@ final class Meta2: Eraseable {
                     Diag.error("Found \(tag.name) tag in non-V4 database")
                     throw Xml2.ParsingError.unexpectedTag(actual: tag.name, expected: nil)
                 }
-                self.settingsChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date.now
+                self.settingsChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date()
             case Xml2.headerHash: 
                 guard formatVersion == .v3 else {
                     Diag.warning("Found \(tag.name) tag in non-V3 database. Ignoring")
@@ -204,23 +204,23 @@ final class Meta2: Eraseable {
             case Xml2.databaseName:
                 self.databaseName = tag.value ?? ""
             case Xml2.databaseNameChanged:
-                self.databaseNameChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date.now
+                self.databaseNameChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date()
             case Xml2.databaseDescription:
                 self.databaseDescription = tag.value ?? ""
             case Xml2.databaseDescriptionChanged:
                 self.databaseDescriptionChangedTime =
-                    timeParser.xmlStringToDate(tag.value) ?? Date.now
+                    timeParser.xmlStringToDate(tag.value) ?? Date()
             case Xml2.defaultUserName:
                 self.defaultUserName = tag.value ?? ""
             case Xml2.defaultUserNameChanged:
-                self.defaultUserNameChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date.now
+                self.defaultUserNameChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date()
             case Xml2.maintenanceHistoryDays:
                 self.maintenanceHistoryDays =
                     UInt32(tag.value) ?? Meta2.defaultMaintenanceHistoryDays
             case Xml2.color:
                 self.colorString = tag.value ?? ""
             case Xml2.masterKeyChanged:
-                self.masterKeyChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date.now
+                self.masterKeyChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date()
             case Xml2.masterKeyChangeRec:
                 self.masterKeyChangeRec = Int64(tag.value) ?? -1
             case Xml2.masterKeyChangeForce:
@@ -236,12 +236,12 @@ final class Meta2: Eraseable {
             case Xml2.recycleBinUUID:
                 self.recycleBinGroupUUID = UUID(base64Encoded: tag.value) ?? UUID.ZERO
             case Xml2.recycleBinChanged:
-                self.recycleBinChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date.now
+                self.recycleBinChangedTime = timeParser.xmlStringToDate(tag.value) ?? Date()
             case Xml2.entryTemplatesGroup:
                 self.entryTemplatesGroupUUID = UUID(base64Encoded: tag.value) ?? UUID.ZERO
             case Xml2.entryTemplatesGroupChanged:
                 self.entryTemplatesGroupChangedTime =
-                    timeParser.xmlStringToDate(tag.value) ?? Date.now
+                    timeParser.xmlStringToDate(tag.value) ?? Date()
             case Xml2.historyMaxItems:
                 self.historyMaxItems = Int32(tag.value) ?? -1
             case Xml2.historyMaxSize:
@@ -341,14 +341,14 @@ final class Meta2: Eraseable {
         backupGroup.isSearchingEnabled = false
 
         self.recycleBinGroupUUID = backupGroup.uuid
-        self.recycleBinChangedTime = Date.now
+        self.recycleBinChangedTime = Date()
         
         return backupGroup
     }
     
     func resetRecycleBinGroupUUID() {
         recycleBinGroupUUID = UUID.ZERO
-        self.recycleBinChangedTime = Date.now
+        self.recycleBinChangedTime = Date()
     }
     
     func toXml(

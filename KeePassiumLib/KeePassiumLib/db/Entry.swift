@@ -332,9 +332,9 @@ public class Entry: DatabaseItem, Eraseable {
     }
     
     override public func touch(_ mode: DatabaseItem.TouchMode, updateParents: Bool = true) {
-        lastAccessTime = Date.now
+        lastAccessTime = Date()
         if mode == .modified {
-            lastModificationTime = Date.now
+            lastModificationTime = Date()
         }
         if updateParents {
             parent?.touch(mode, updateParents: true)

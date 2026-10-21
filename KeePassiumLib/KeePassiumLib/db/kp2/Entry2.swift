@@ -263,7 +263,7 @@ public class Entry2: Entry {
         autoType = AutoType()
         history = []
         usageCount = 0
-        locationChangedTime = Date.now
+        locationChangedTime = Date()
         foregroundColor = ""
         backgroundColor = ""
         overrideURL = ""
@@ -283,7 +283,7 @@ public class Entry2: Entry {
         autoType.erase()
         history.erase()
         usageCount = 0
-        locationChangedTime = Date.now
+        locationChangedTime = Date()
         foregroundColor.erase()
         backgroundColor.erase()
         overrideURL.erase()
@@ -378,7 +378,7 @@ public class Entry2: Entry {
     override public func move(to newGroup: Group) {
         previousParentGroupUUID = parent?.uuid ?? UUID.ZERO
         super.move(to: newGroup)
-        locationChangedTime = Date.now
+        locationChangedTime = Date()
     }
     
     func load(

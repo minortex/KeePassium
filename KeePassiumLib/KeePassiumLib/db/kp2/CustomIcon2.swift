@@ -57,7 +57,7 @@ public class CustomIcon2: Eraseable {
     
     public func setName(_ newName: String) {
         name = newName
-        lastModificationTime = Date.now
+        lastModificationTime = Date()
     }
     
     func load(xml: AEXMLElement, timeParser: Database2XMLTimeParser) throws {

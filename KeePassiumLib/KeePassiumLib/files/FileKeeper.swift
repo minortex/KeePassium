@@ -758,10 +758,10 @@ public class FileKeeper {
         let fileNameSuffix: String
         switch mode {
         case .latest:
-            timestamp = Date.now
+            timestamp = Date()
             fileNameSuffix = backupLatestSuffix
         case .timestamped:
-            timestamp = Date.now - 1.0
+            timestamp = Date() - 1.0
             let timestampString = backupTimestampFormatter.string(from: timestamp)
             fileNameSuffix = String(backupTimestampSeparator) + timestampString
         }
@@ -904,7 +904,7 @@ public class FileKeeper {
     
     public func deleteBackupFiles(olderThan maxAge: TimeInterval, keepLatest: Bool) {
         let allBackupFileRefs = getBackupFiles()
-        let now = Date.now
+        let now = Date()
         for fileRef in allBackupFileRefs {
             if keepLatest && isLatestBackupFile(fileRef) {
                 continue

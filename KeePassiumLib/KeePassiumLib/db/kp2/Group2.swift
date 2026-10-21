@@ -39,7 +39,7 @@ public class Group2: Group {
         isSearchingEnabled = nil
         lastTopVisibleEntryUUID = UUID.ZERO
         usageCount = 0
-        locationChangedTime = Date.now
+        locationChangedTime = Date()
         previousParentGroupUUID = UUID.ZERO
         tags = ""
         customData = CustomData2(database: database)
@@ -58,7 +58,7 @@ public class Group2: Group {
         isSearchingEnabled = nil
         lastTopVisibleEntryUUID.erase()
         usageCount = 0
-        locationChangedTime = Date.now
+        locationChangedTime = Date()
         previousParentGroupUUID.erase()
         tags = ""
         customData.erase()
@@ -127,7 +127,7 @@ public class Group2: Group {
     override public func move(to newGroup: Group) {
         previousParentGroupUUID = parent?.uuid ?? UUID.ZERO
         super.move(to: newGroup)
-        self.locationChangedTime = Date.now
+        self.locationChangedTime = Date()
     }
     
     func load(

@@ -103,12 +103,12 @@ public class DatabaseLoader: ProgressObserver {
             self.progress.cancel()
             self.endBackgroundTask()
         })
-        startTime = Date.now
+        startTime = Date()
     }
     
     private func endBackgroundTask() {
         if let startTime = startTime {
-            let duration = Date.now.timeIntervalSince(startTime)
+            let duration = Date().timeIntervalSince(startTime)
             print(String(format: "Done in %.2f s", arguments: [duration]))
         }
         
