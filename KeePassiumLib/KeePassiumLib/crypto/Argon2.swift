@@ -68,9 +68,6 @@ public final class Argon2 {
             change: [NSKeyValueChangeKey: Any]?,
             context: UnsafeMutableRawPointer?
         ) {
-            if progress.cancellationReason == .lowMemoryWarning {
-                FLAG_clear_internal_memory = 0
-            }
             state.isAbortProcessing = 1
         }
     }
