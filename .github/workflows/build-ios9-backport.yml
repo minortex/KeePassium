@@ -1,7 +1,9 @@
 name: Build iOS 9 Backport
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - ci/ios9-backport-build
 
 permissions:
   contents: read
