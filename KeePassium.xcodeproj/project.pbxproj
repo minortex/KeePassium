@@ -1628,23 +1628,6 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXContainerItemProxy section */
-		75EAA0020000000000000002 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 75D0C7612174AF1F00C64C93 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 75D0C7692174AF1F00C64C93;
-			remoteInfo = KeePassiumLib;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXTargetDependency section */
-		75EAA0010000000000000001 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 75EAA0020000000000000002 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin PBXNativeTarget section */
 		754BF07A2082A6BD00E3A292 /* KeePassium */ = {
 			isa = PBXNativeTarget;
@@ -1659,7 +1642,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				75EAA0010000000000000001 /* PBXTargetDependency */,
 			);
 			name = KeePassium;
 			productName = KeePassium;
