@@ -10,7 +10,7 @@ import UIKit
 
 extension String {
     
-    var isOpenableURL: Bool {
+    public var isOpenableURL: Bool {
         guard let url = URL(string: self) else {
             return false
         }
