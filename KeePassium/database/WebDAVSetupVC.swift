@@ -81,7 +81,7 @@ final class WebDAVSetupVC: UITableViewController {
         return navigationVC
     }
 
-    private init(style: UITableView.Style) {
+    private override init(style: UITableView.Style) {
         self.completion = {}
         super.init(style: style)
         tableView.register(
