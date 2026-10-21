@@ -36,8 +36,8 @@ jobs:
             COMPILER_INDEX_STORE_ENABLE=NO
 
           xcodebuild build \
-            -project KeePassium.xcodeproj \
-            -target KeePassium \
+            -workspace KeePassium.xcworkspace \
+            -scheme KeePassium \
             -configuration Debug \
             -destination "generic/platform=iOS" \
             SDKROOT=iphoneos \
