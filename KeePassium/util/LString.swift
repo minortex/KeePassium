@@ -501,7 +501,8 @@ public enum LString {
     )
     
     public static func directionAwareConcatenate(_ parts: [String]) -> String {
-        if UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft {
+        let direction = UIView.appearance().semanticContentAttribute
+        if direction == .forceRightToLeft {
             return parts.reversed().joined()
         }
         return parts.joined()

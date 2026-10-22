@@ -34,7 +34,8 @@ extension PremiumFeature {
                 "[PremiumFeature/CustomAppIcons/title]",
                 value: "Custom App Icons",
                 comment: "Title of a premium feature: ability to change the app icon")
-        case .canUseExpressUnlock,
+        case .canUseHardwareKeys,
+             .canUseExpressUnlock,
              .canViewFieldReferences:
             assertionFailure("Implicit feature, no upgrade notice required")
             return LString.premiumFeatureGenericTitle
@@ -58,7 +59,8 @@ extension PremiumFeature {
                 "[PremiumFeature/Preview/description] Preview images and documents directly in the app, in the premium version.",
                 value: "Preview images and documents directly in the app, in the premium version.",
                 comment: "Description/advertisement for the `Preview Attachments` premium feature")
-        case .canKeepMasterKeyOnDatabaseTimeout,
+        case .canUseHardwareKeys,
+             .canKeepMasterKeyOnDatabaseTimeout,
              .canChangeAppIcon,
              .canUseExpressUnlock,
              .canViewFieldReferences:

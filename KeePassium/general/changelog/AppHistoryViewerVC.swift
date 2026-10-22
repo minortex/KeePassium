@@ -26,7 +26,6 @@ class AppHistoryViewerVC: UITableViewController {
     }
     
     enum TableSection {
-        case fallbackSeparator(date: Date)
         case historySection(section: AppHistory.Section)
     }
     
@@ -62,8 +61,6 @@ extension AppHistoryViewerVC {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch sections[section] {
-        case .fallbackSeparator:
-            return 1
         case .historySection(section: let appHistorySection):
             return appHistorySection.items.count
         }
@@ -75,8 +72,6 @@ extension AppHistoryViewerVC {
         -> String?
     {
         switch sections[section] {
-        case .fallbackSeparator:
-            return nil
         case .historySection(section: let sectionInfo):
             let formattedDate = dateFormatter.string(from: sectionInfo.releaseDate)
             return "v\(sectionInfo.version) (\(formattedDate))"
@@ -94,55 +89,22 @@ extension AppHistoryViewerVC {
         -> UITableViewCell
     {
         switch sections[indexPath.section] {
-        case .fallbackSeparator(date: let fallbackDate):
-            let cell = tableView
-                .dequeueReusableCell(withIdentifier: AppHistoryFallbackCell.storyboardID)
-                as! AppHistoryFallbackCell
-            let formattedDate = dateFormatter.string(from: fallbackDate)
-            cell.textLabel?.text = String.localizedStringWithFormat(
-                LString.perpetualLicenseStatus,
-                formattedDate)
-            return cell
         case .historySection(section: let releaseInfo):
             let cell = tableView
                 .dequeueReusableCell(withIdentifier: AppHistoryItemCell.storyboardID)
                 as! AppHistoryItemCell
             let item = releaseInfo.items[indexPath.row]
-            let isOwned = (fallbackDate != nil) && (releaseInfo.releaseDate < fallbackDate!)
-            setupCell(cell, item: item, isOwned: isOwned)
+            setupCell(cell, item: item)
             return cell
         }
     }
     
-    private func setupCell(_ cell: AppHistoryItemCell, item: AppHistory.Item, isOwned: Bool) {
+    private func setupCell(_ cell: AppHistoryItemCell, item: AppHistory.Item) {
         cell.titleLabel.text = item.title
-        switch item.type {
-        case .none:
-            cell.detailLabel.text = ""
-            cell.accessoryView = nil
-            cell.accessoryType = isOwned ? .checkmark : .none
-            cell.tintColor = .auxiliaryText
-        case .free:
-            cell.accessoryView = nil
-            cell.tintColor = .auxiliaryText
-            if isOwned {
-                cell.accessoryType = .checkmark
-                cell.detailLabel.text = ""
-            } else {
-                cell.accessoryType = .none
-                cell.detailLabel.text = LString.premiumFreePlanPrice
-            }
-        case .premium:
-            cell.detailLabel.text = ""
-            if isOwned {
-                cell.accessoryView = nil
-                cell.accessoryType = .checkmark
-                cell.tintColor = .kpYellow
-            } else {
-                cell.accessoryType = .none
-                cell.accessoryView = PremiumBadgeAccessory()
-            }
-        }
+        cell.detailLabel.text = ""
+        cell.accessoryView = nil
+        cell.accessoryType = .none
+        cell.tintColor = .auxiliaryText
     }
 }
 

@@ -26,14 +26,16 @@ class CollectionViewControllerWithContextActions: UICollectionViewController {
         return []
     }
     
+    #if compiler(>=5.1)
     @available(iOS 9, *)
-    override func collectionView(
+    func collectionView(
         _ collectionView: UICollectionView,
         canEditItemAt indexPath: IndexPath
     ) -> Bool {
         let itemActions = getContextActionsForItem(at: indexPath)
         return itemActions.count > 0
     }
+    #endif
     
     
     @objc
@@ -41,10 +43,18 @@ class CollectionViewControllerWithContextActions: UICollectionViewController {
         let point = gestureRecognizer.location(in: collectionView)
         guard gestureRecognizer.state == .began,
               let indexPath = collectionView.indexPathForItem(at: point),
-              collectionView(collectionView, canEditItemAt: indexPath)
+              canEditItem(at: indexPath)
         else { return }
         let actions = getContextActionsForItem(at: indexPath)
         showActionsPopover(actions, at: indexPath)
+    }
+
+    private func canEditItem(at indexPath: IndexPath) -> Bool {
+        #if compiler(>=5.1)
+        return collectionView(collectionView, canEditItemAt: indexPath)
+        #else
+        return getContextActionsForItem(at: indexPath).count > 0
+        #endif
     }
     
     internal func showActionsPopover(_ actions: [ContextualAction], at indexPath: IndexPath) {

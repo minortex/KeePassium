@@ -43,7 +43,7 @@ struct ContextualAction {
             title: title,
             style: alertActionStyle,
             handler: { action in
-                handler()
+                self.handler()
             }
         )
     }

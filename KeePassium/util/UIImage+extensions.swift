@@ -74,11 +74,12 @@ extension UIImage {
     }
     
     static func get(_ systemImageName: SystemImageName) -> UIImage? {
+        #if compiler(>=5.1)
         if #available(iOS 13, *) {
             return UIImage(systemName: systemImageName.rawValue)
-        } else {
-            return nil
         }
+        #endif
+        return nil
     }
     
     static func kpIcon(forEntry entry: Entry, iconSet: DatabaseIconSet?=nil) -> UIImage? {
@@ -123,6 +124,7 @@ extension UIImage {
     }
     
     func withGradientUnderlay() -> UIImage? {
+        #if compiler(>=5.1)
         guard #available(iOS 13, *) else {
             return self
         }
@@ -159,5 +161,8 @@ extension UIImage {
         let composed = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return composed
+        #else
+        return self
+        #endif
     }
 }

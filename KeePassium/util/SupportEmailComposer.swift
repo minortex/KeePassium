@@ -97,14 +97,7 @@ class SupportEmailComposer: NSObject {
             return
         }
         
-        let urlOpener: URLOpener
         #if MAIN_APP
-        urlOpener = URLOpener(UIApplication.shared)
-        #else
-        urlOpener = URLOpener(parent)
-        #endif
-        
-        
         let app = UIApplication.shared
         guard app.canOpenURL(url) else {
             showExportSheet(for: url, completion: self.completionHandler)
@@ -117,6 +110,9 @@ class SupportEmailComposer: NSObject {
                 self.showExportSheet(for: url, completion: self.completionHandler)
             }
         }
+        #else
+        showExportSheet(for: url, completion: self.completionHandler)
+        #endif
     }
     
     private func showExportSheet(for url: URL, completion: CompletionHandler?) {

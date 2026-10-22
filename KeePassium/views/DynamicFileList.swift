@@ -41,6 +41,7 @@ extension DynamicFileList {
     
     private func animateSorting(oldIndices: [Int], in tableView: UITableView) {
         ongoingUpdateAnimations += 1
+        #if compiler(>=5.1)
         tableView.performBatchUpdates(
             {
                 [weak tableView] in
@@ -57,6 +58,10 @@ extension DynamicFileList {
                 self.scheduleDataReload(in: tableView)
             }
         )
+        #else
+        tableView.reloadData()
+        scheduleDataReload(in: tableView)
+        #endif
     }
     
     func scheduleDataReload(in tableView: UITableView) {

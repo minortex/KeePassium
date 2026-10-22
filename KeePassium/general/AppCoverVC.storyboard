@@ -36,5 +36,5 @@
     <resources>
         <image name="app-cover" width="250" height="250"/>
     </resources>
-    <color key="tintColor" name="ActionTint"/>
+    <color key="tintColor" red="0.0" green="0.478" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

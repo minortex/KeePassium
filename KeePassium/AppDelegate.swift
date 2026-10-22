@@ -109,8 +109,12 @@ extension AppDelegate: WatchdogDelegate {
         guard appCoverWindow == nil else { return }
         
         let _appCoverWindow = UIWindow(frame: UIScreen.main.bounds)
+        #if compiler(>=5.1)
         _appCoverWindow.setScreen(UIScreen.main)
-        _appCoverWindow.windowLevel = UIWindowLevelAlert
+        _appCoverWindow.windowLevel = UIWindow.Level.alert
+        #else
+        _appCoverWindow.windowLevel = UIWindow.Level.alert
+        #endif
         self.appCoverWindow = _appCoverWindow
 
         let coverVC = AppCoverVC.make()
@@ -162,8 +166,12 @@ extension AppDelegate: WatchdogDelegate {
         passcodeInputVC.isBiometricsAllowed = canUseBiometrics
         
         let _appLockWindow = UIWindow(frame: UIScreen.main.bounds)
+        #if compiler(>=5.1)
         _appLockWindow.setScreen(UIScreen.main)
-        _appLockWindow.windowLevel = UIWindowLevelAlert
+        _appLockWindow.windowLevel = UIWindow.Level.alert
+        #else
+        _appLockWindow.windowLevel = UIWindow.Level.alert
+        #endif
         UIView.performWithoutAnimation { [weak self] in
             _appLockWindow.rootViewController = passcodeInputVC
             _appLockWindow.makeKeyAndVisible()
@@ -226,8 +234,12 @@ extension AppDelegate: WatchdogDelegate {
         guard biometricsBackgroundWindow == nil else { return }
         
         let window = UIWindow(frame: UIScreen.main.bounds)
+        #if compiler(>=5.1)
         window.setScreen(UIScreen.main)
-        window.windowLevel = UIWindowLevelAlert + 1
+        window.windowLevel = UIWindow.Level.alert + 1
+        #else
+        window.windowLevel = UIWindow.Level.alert + 1
+        #endif
         let coverVC = AppCoverVC.make()
         
         UIView.performWithoutAnimation {

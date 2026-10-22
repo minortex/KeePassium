@@ -54,12 +54,16 @@ class SettingsAppearanceVC: UITableViewController {
 
         let textScale = settings.textScale
         entryTextScaleSlider.value = Float(textScale)
+        #if compiler(>=5.1)
         tableView.performBatchUpdates(
             { [weak textScaleLabel] in
                 textScaleLabel?.font = UIFont.monospaceFont(ofSize: 17 * textScale, forTextStyle: .body)
             },
             completion: nil
         )
+        #else
+        textScaleLabel?.font = UIFont.monospaceFont(ofSize: 17 * textScale, forTextStyle: .body)
+        #endif
         
         databaseIconsCell.imageView?.image = settings.databaseIconSet.getIcon(.key)
     }

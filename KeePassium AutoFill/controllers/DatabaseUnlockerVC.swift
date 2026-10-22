@@ -62,15 +62,6 @@ class DatabaseUnlockerVC: UIViewController, Refreshable {
         
         passwordField.delegate = self
         keyFileField.delegate = self
-        
-        keyFileField.yubikeyHandler = {
-            [weak self] (field) in
-            guard let self = self else { return }
-            let popoverAnchor = PopoverAnchor(
-                sourceView: self.keyFileField,
-                sourceRect: self.keyFileField.bounds)
-            self.delegate?.didPressSelectHardwareKey(in: self, at: popoverAnchor)
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -119,7 +110,6 @@ class DatabaseUnlockerVC: UIViewController, Refreshable {
                 }
             }
         )
-        StoreReviewSuggester.registerEvent(.trouble)
     }
     
     func hideErrorMessage(animated: Bool) {
@@ -181,19 +171,11 @@ class DatabaseUnlockerVC: UIViewController, Refreshable {
             }
         }
 
-        if let associatedYubiKey = dbSettings?.associatedYubiKey {
-            setYubiKey(associatedYubiKey)
-        }
     }
     
     func setYubiKey(_ yubiKey: YubiKey?) {
         self.yubiKey = yubiKey
-        keyFileField.isYubiKeyActive = (yubiKey != nil)
 
-        guard let databaseRef = databaseRef else { assertionFailure(); return }
-        DatabaseSettingsManager.shared.updateSettings(for: databaseRef) { (dbSettings) in
-            dbSettings.maybeSetAssociatedYubiKey(yubiKey)
-        }
         if let _yubiKey = yubiKey {
             Diag.info("Hardware key selected [key: \(_yubiKey)]")
         } else {

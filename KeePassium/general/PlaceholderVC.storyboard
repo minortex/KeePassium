@@ -19,7 +19,7 @@
                                 <rect key="frame" x="87.5" y="233.5" width="200" height="200"/>
                             </imageView>
                         </subviews>
-                        <color key="backgroundColor" name="ListBackground"/>
+                        <color key="backgroundColor" red="0.937" green="0.937" blue="0.957" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="XYE-lU-dgL" firstAttribute="centerY" secondItem="ld1-Le-Lh5" secondAttribute="centerY" id="Nvn-Pb-kt5"/>
                             <constraint firstItem="XYE-lU-dgL" firstAttribute="centerX" secondItem="ld1-Le-Lh5" secondAttribute="centerX" id="cXE-d8-WPn"/>
@@ -33,9 +33,6 @@
     </scenes>
     <resources>
         <image name="placeholder-splash" width="200" height="200"/>
-        <namedColor name="ListBackground">
-            <color red="0.94900000095367432" green="0.94900000095367432" blue="0.96899998188018799" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
     </resources>
-    <color key="tintColor" name="ActionTint"/>
+    <color key="tintColor" red="0.0" green="0.478" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

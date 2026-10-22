@@ -4,7 +4,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -39,7 +38,7 @@
                                                 <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="settings-app-icon-listitem" id="eeb-bc-aya">
                                                     <rect key="frame" x="16" y="11.5" width="29" height="29"/>
                                                     <autoresizingMask key="autoresizingMask"/>
-                                                    <color key="tintColor" name="IconTint"/>
+                                                    <color key="tintColor" red="0.0" green="0.412" blue="0.851" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 </imageView>
                                             </subviews>
                                             <attributedString key="userComments">
@@ -67,7 +66,7 @@
                                                 <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="db-icons/db-icon-loading" id="QKJ-al-m91">
                                                     <rect key="frame" x="16" y="11.5" width="29" height="29"/>
                                                     <autoresizingMask key="autoresizingMask"/>
-                                                    <color key="tintColor" name="IconTint"/>
+                                                    <color key="tintColor" red="0.0" green="0.412" blue="0.851" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 </imageView>
                                             </subviews>
                                         </tableViewCellContentView>
@@ -89,7 +88,7 @@
                                                         <bool key="isElement" value="NO"/>
                                                     </accessibility>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                    <color key="textColor" name="PrimaryText"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                     <attributedString key="userComments">
                                                         <fragment content="#bc-ignore!"/>
@@ -107,7 +106,7 @@
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                                                     <inset key="contentEdgeInsets" minX="8" minY="8" maxX="8" maxY="8"/>
                                                     <state key="normal" image="zoom-original-toolbar">
-                                                        <color key="titleColor" name="ActionTint"/>
+                                                        <color key="titleColor" red="0.0" green="0.478" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </state>
                                                     <attributedString key="userComments">
                                                         <fragment content="Action: set text size to standard size"/>
@@ -143,7 +142,7 @@
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="settings-hide-passwords-listitem" translatesAutoresizingMaskIntoConstraints="NO" id="hX2-R8-ftf">
                                                     <rect key="frame" x="16" y="7.5" width="29" height="29"/>
-                                                    <color key="tintColor" name="IconTint"/>
+                                                    <color key="tintColor" red="0.0" green="0.412" blue="0.851" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="29" id="Oc3-mW-qWK"/>
                                                         <constraint firstAttribute="width" constant="29" id="Z10-ba-Idv"/>
@@ -152,7 +151,7 @@
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="Hide Passwords" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="usg-hF-eLK">
                                                     <rect key="frame" x="61" y="12" width="186" height="20.5"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                    <color key="textColor" name="PrimaryText"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                                 <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lxT-1h-16d">
@@ -206,14 +205,5 @@
         <image name="settings-app-icon-listitem" width="29" height="29"/>
         <image name="settings-hide-passwords-listitem" width="29" height="29"/>
         <image name="zoom-original-toolbar" width="25" height="25"/>
-        <namedColor name="ActionTint">
-            <color red="0.0" green="0.4779999852180481" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="IconTint">
-            <color red="0.0" green="0.41176470588235292" blue="0.85098039215686272" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="PrimaryText">
-            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </namedColor>
     </resources>
 </document>

@@ -197,7 +197,7 @@ final class ViewGroupVC:
         } else {
             searchController.dimsBackgroundDuringPresentation = false
         }
-        if #available(iOS 9.0, *) {
+        if #available(iOS 9.1, *) {
             searchController.obscuresBackgroundDuringPresentation = false
         }
         searchController.hidesNavigationBarDuringPresentation = true
@@ -382,6 +382,7 @@ final class ViewGroupVC:
     }
     
     private func setupAccessibilityActions(_ cell: GroupViewListCell, entry: Entry) {
+        #if compiler(>=5.1)
         guard #available(iOS 13, *) else { return }
         
         var actions = [UIAccessibilityCustomAction]()
@@ -412,6 +413,7 @@ final class ViewGroupVC:
             actions.append(action)
         }
         cell.accessibilityCustomActions = actions
+        #endif
     }
 
     func getDetailInfo(forEntry entry: Entry) -> String? {

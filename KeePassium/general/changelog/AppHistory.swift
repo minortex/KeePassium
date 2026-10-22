@@ -39,7 +39,24 @@ extension AppHistory {
         do {
             let fileContents = try Data(contentsOf: url)
             let jsonDecoder = JSONDecoder()
+            #if compiler(>=5.1)
             jsonDecoder.dateDecodingStrategy = .iso8601
+            #else
+            jsonDecoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let value = try container.decode(String.self)
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+                guard let date = formatter.date(from: value) else {
+                    throw DecodingError.dataCorruptedError(
+                        in: container,
+                        debugDescription: "Invalid ISO 8601 date")
+                }
+                return date
+            }
+            #endif
             let appHistory = try jsonDecoder.decode(AppHistory.self, from: fileContents)
             return appHistory
         } catch {

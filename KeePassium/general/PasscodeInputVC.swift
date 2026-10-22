@@ -62,7 +62,9 @@ class PasscodeInputVC: UIViewController {
         
         mainButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .body)
         mainButton.titleLabel?.textAlignment = .center
+        #if compiler(>=5.1)
         mainButton.titleLabel?.adjustsFontForContentSizeCategory = true
+        #endif
         
         self.presentationController?.delegate = self
         

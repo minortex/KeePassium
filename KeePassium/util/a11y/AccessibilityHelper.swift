@@ -23,7 +23,7 @@ class AccessibilityHelper {
             return String.localizedStringWithFormat(
                 "%@ (%@)",
                 premiumFeatureName,
-                LString.premiumFeatureGenericTitle)
+                "Premium")
         }
     }
 }

@@ -235,7 +235,9 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
         if #available(iOS 11.0, *) {
             UIAccessibility.post(notification: .layoutChanged, argument: errorLabel)
         } else {
-            UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, errorLabel)
+            UIAccessibility.post(
+                notification: UIAccessibility.Notification(rawValue: 1000),
+                argument: errorLabel)
         }
         
         guard errorMessagePanel.isHidden else { return }

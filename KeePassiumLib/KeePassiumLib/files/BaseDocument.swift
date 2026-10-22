@@ -15,7 +15,7 @@ public class BaseDocument: UIDocument, Synchronizable {
     
     public internal(set) var data = ByteArray()
     public internal(set) var error: FileAccessError?
-    public var errorMessage: String? { error?.localizedDescription }
+    public var errorMessage: String? { return error?.localizedDescription }
     public var hasError: Bool { return error != nil }
     public internal(set) var fileProvider: FileProvider?
     

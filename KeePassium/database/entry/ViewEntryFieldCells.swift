@@ -87,7 +87,7 @@ protocol ViewableFieldCellBase: class {
 }
 
 class ViewableFieldCell: UITableViewCell, ViewableFieldCellBase {
-    class var storyboardID: String { "ViewableFieldCell" }
+    class var storyboardID: String { return "ViewableFieldCell" }
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var valueText: UITextView!
     @IBOutlet weak var valueScrollView: UIScrollView!
@@ -112,9 +112,13 @@ class ViewableFieldCell: UITableViewCell, ViewableFieldCellBase {
     func setupCell() {
         let textScale = Settings.current.textScale
         nameLabel.font = UIFont.systemFont(ofSize: 15 * textScale, forTextStyle: .subheadline, weight: .thin)
+        #if compiler(>=5.1)
         nameLabel.adjustsFontForContentSizeCategory = true
+        #endif
         valueText.font = UIFont.monospaceFont(ofSize: 17 * textScale, forTextStyle: .body)
+        #if compiler(>=5.1)
         valueText.adjustsFontForContentSizeCategory = true
+        #endif
         
         nameLabel.text = field?.visibleName
         valueText.text = getUserVisibleValue()
@@ -151,7 +155,7 @@ class OpenURLAccessoryButton: UIButton {
 }
 
 class URLFieldCell: ViewableFieldCell {
-    override class var storyboardID: String { "URLFieldCell" }
+    override class var storyboardID: String { return "URLFieldCell" }
 
     private var url: URL?
     
@@ -222,7 +226,7 @@ class ToggleVisibilityAccessoryButton: UIButton {
 }
 
 class ProtectedFieldCell: ViewableFieldCell {
-    override class var storyboardID: String { "ProtectedFieldCell" }
+    override class var storyboardID: String { return "ProtectedFieldCell" }
     private let hiddenValueMask = "* * * *"
     private var toggleButton: ToggleVisibilityAccessoryButton? 
 
@@ -290,7 +294,7 @@ class ProtectedFieldCell: ViewableFieldCell {
 
 
 class ExpandableFieldCell: ViewableFieldCell {
-    override class var storyboardID: String { "ExpandableFieldCell" }
+    override class var storyboardID: String { return "ExpandableFieldCell" }
     
     @IBOutlet weak var showMoreButton: UIButton!
     @IBOutlet weak var showMoreContainer: UIView!
@@ -362,7 +366,7 @@ class ExpandableFieldCell: ViewableFieldCell {
 
 
 class TOTPFieldCell: ViewableFieldCell {
-    override class var storyboardID: String { "TOTPFieldCell" }
+    override class var storyboardID: String { return "TOTPFieldCell" }
     private let refreshInterval = 1.0
     
     @IBOutlet weak var progressView: UIProgressView!

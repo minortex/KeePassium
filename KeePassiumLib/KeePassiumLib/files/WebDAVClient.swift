@@ -166,13 +166,15 @@ public final class WebDAVClient: NSObject {
         if let error = error {
             let nsError = error as NSError
             if nsError.code == NSURLErrorCancelled {
-                switch context.cancelReason {
+                guard let cancelReason = context.cancelReason else {
+                    context.completion(.failure(.noInfoAvailable))
+                    return
+                }
+                switch cancelReason {
                 case .authenticationFailed(let message):
                     context.completion(.failure(.authenticationFailed(message: message)))
                 case .untrustedCertificate(let message):
                     context.completion(.failure(.certificateError(message: message)))
-                case .none:
-                    context.completion(.failure(.noInfoAvailable))
                 }
             } else if nsError.code == NSURLErrorTimedOut {
                 context.completion(.failure(.timeout(fileProvider: .keepassiumWebDAV)))

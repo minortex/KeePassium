@@ -99,8 +99,6 @@ class MainCoordinator: NSObject, Coordinator {
     }
 
     fileprivate func startMainFlow() {
-        StoreReviewSuggester.registerEvent(.sessionStart)
-        
         let isPreviouslyCrashed = !Settings.current.isAutoFillFinishedOK
         if isPreviouslyCrashed {
             showCrashReport()
@@ -206,8 +204,6 @@ class MainCoordinator: NSObject, Coordinator {
     
     
     func showCrashReport() {
-        StoreReviewSuggester.registerEvent(.trouble)
-        
         let vc = CrashReportVC.instantiateFromStoryboard()
         vc.delegate = self
         navigationController.pushViewController(vc, animated: false)
@@ -297,7 +293,7 @@ class MainCoordinator: NSObject, Coordinator {
             tryToUnlockDatabase(
                 database: database,
                 compositeKey: storedDatabaseKey,
-                yubiKey: dbSettings?.associatedYubiKey,
+                yubiKey: nil,
                 canUseFinalKey: PremiumManager.shared.isAvailable(feature: .canUseExpressUnlock)
             )
         }
@@ -361,11 +357,11 @@ class MainCoordinator: NSObject, Coordinator {
     
     func showUpgradeOptions(from viewController: UIViewController) {
         let urlOpener = URLOpener(rootController)
-        urlOpener.open(url: AppGroup.upgradeToPremiumURL) {
+        urlOpener.open(url: URL(string: "keepassium://premium")!) {
             [self] (success) in
             if !success {
                 Diag.warning("Failed to open main app")
-                showManualUpgradeMessage()
+                self.showManualUpgradeMessage()
             }
         }
     }
@@ -553,7 +549,7 @@ extension MainCoordinator: DatabaseManagerObserver {
             tryToUnlockDatabase(
                 database: urlRef,
                 compositeKey: compositeKey,
-                yubiKey: dbSettings.associatedYubiKey,
+                yubiKey: nil,
                 canUseFinalKey: false
             )
         } else {
@@ -818,7 +814,6 @@ extension MainCoordinator: PasscodeInputDelegate {
             } else {
                 HapticFeedback.play(.wrongPassword)
                 sender.animateWrongPassccode()
-                StoreReviewSuggester.registerEvent(.trouble)
                 if Settings.current.isLockAllDatabasesOnFailedPasscode {
                     DatabaseSettingsManager.shared.eraseAllMasterKeys()
                     DatabaseManager.shared.closeDatabase(

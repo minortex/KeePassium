@@ -27,15 +27,21 @@ public class NavigationRouter: NSObject {
     
     public var isModalInPresentation: Bool {
         get {
+            #if compiler(>=5.1)
             guard #available(iOS 13, *) else {
                 return false
             }
             return navigationController.isModalInPresentation
+            #else
+            return false
+            #endif
         }
         set {
+            #if compiler(>=5.1)
             if #available(iOS 13, *) {
                 navigationController.isModalInPresentation = newValue
             }
+            #endif
         }
     }
     
@@ -203,10 +209,12 @@ extension NavigationRouter: ProgressViewHost {
             title: title,
             animated: true)
         progressOverlay?.isCancellable = allowCancelling
+        #if compiler(>=5.1)
         if #available(iOS 13, *) {
             wasModalInPresentation = navigationController.isModalInPresentation
             navigationController.isModalInPresentation = true
         }
+        #endif
         wasNavigationBarHidden = navigationController.isNavigationBarHidden
         navigationController.setNavigationBarHidden(true, animated: true)
     }
@@ -218,9 +226,11 @@ extension NavigationRouter: ProgressViewHost {
     public func hideProgressView() {
         guard progressOverlay != nil else { return }
         navigationController.setNavigationBarHidden(wasNavigationBarHidden, animated: true)
+        #if compiler(>=5.1)
         if #available(iOS 13, *) {
             navigationController.isModalInPresentation = wasModalInPresentation
         }
+        #endif
         progressOverlay?.dismiss(animated: true) {
             [weak self] (finished) in
             guard let self = self else { return }

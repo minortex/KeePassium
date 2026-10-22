@@ -210,15 +210,23 @@ class FileInfoVC: UITableViewController {
             
             let newSectionCount = self.numberOfSections(in: self.tableView)
             if newSectionCount > oldSectionCount {
+                #if compiler(>=5.1)
                 self.tableView.performBatchUpdates({
                     self.tableView.reloadSections([0], with: .fade)
                     self.tableView.insertSections([1], with: .fade)
                 }, completion: nil)
+                #else
+                self.tableView.reloadData()
+                #endif
             } else if newSectionCount < oldSectionCount {
+                #if compiler(>=5.1)
                 self.tableView.performBatchUpdates({
                     self.tableView.deleteSections([1], with: .fade)
                     self.tableView.reloadSections([0], with: .automatic)
                 }, completion: nil)
+                #else
+                self.tableView.reloadData()
+                #endif
             } else {
                 let sections = IndexSet(integersIn: 0..<newSectionCount)
                 self.tableView.reloadSections(sections, with: .none)

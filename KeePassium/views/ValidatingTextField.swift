@@ -95,9 +95,11 @@ extension ValidatingTextField: UITextFieldDelegate {
         return externalDelegate?.textFieldShouldEndEditing?(textField) ?? true
     }
     
+    #if compiler(>=5.1)
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
         externalDelegate?.textFieldDidEndEditing?(textField, reason: reason)
     }
+    #endif
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         externalDelegate?.textFieldDidEndEditing?(textField)
@@ -127,8 +129,10 @@ extension ValidatingTextField: UITextFieldDelegate {
         return externalDelegate?.textFieldShouldReturn?(textField) ?? true
     }
     
+    #if compiler(>=5.1)
     @available(iOS 13, *)
     func textFieldDidChangeSelection(_ textField: UITextField) {
         externalDelegate?.textFieldDidChangeSelection?(textField)
     }
+    #endif
 }

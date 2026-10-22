@@ -4,7 +4,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
-        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -26,7 +25,7 @@
                                     <subviews>
                                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="itG-fy-fi4" userLabel="Separator">
                                             <rect key="frame" x="0.0" y="0.0" width="768" height="2"/>
-                                            <color key="backgroundColor" name="ListBackground"/>
+                                            <color key="backgroundColor" red="0.937" green="0.937" blue="0.957" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="2" id="APl-cy-eTe"/>
                                             </constraints>
@@ -34,7 +33,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="{ViewableFieldCell}" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="46A-ga-B85">
                                             <rect key="frame" x="20" y="10" width="728" height="19.5"/>
                                             <fontDescription key="fontDescription" type="system" weight="thin" pointSize="16"/>
-                                            <color key="textColor" name="PrimaryText"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                             <attributedString key="userComments">
                                                 <fragment content="#bc-ignore!"/>
@@ -45,7 +44,7 @@
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" scrollEnabled="NO" editable="NO" text="{Field Value}" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Lyz-4O-dvw">
                                                     <rect key="frame" x="0.0" y="0.0" width="728" height="35.5"/>
-                                                    <color key="textColor" name="PrimaryText"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="16"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <attributedString key="userComments">
@@ -91,7 +90,7 @@
                                     <subviews>
                                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rf6-jL-050" userLabel="Separator">
                                             <rect key="frame" x="0.0" y="0.0" width="768" height="2"/>
-                                            <color key="backgroundColor" name="ListBackground"/>
+                                            <color key="backgroundColor" red="0.937" green="0.937" blue="0.957" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="2" id="K80-G3-Wwc"/>
                                             </constraints>
@@ -99,7 +98,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="{ViewableFieldCell}" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="weL-29-hO1">
                                             <rect key="frame" x="20" y="10" width="728" height="19.5"/>
                                             <fontDescription key="fontDescription" type="system" weight="thin" pointSize="16"/>
-                                            <color key="textColor" name="PrimaryText"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                             <attributedString key="userComments">
                                                 <fragment content="#bc-ignore!"/>
@@ -110,7 +109,7 @@
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" scrollEnabled="NO" editable="NO" text="{Field Value}" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="wfh-AY-t3P">
                                                     <rect key="frame" x="0.0" y="0.0" width="728" height="35.5"/>
-                                                    <color key="textColor" name="PrimaryText"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="16"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <attributedString key="userComments">
@@ -156,7 +155,7 @@
                                     <subviews>
                                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="O0b-sr-9BP" userLabel="Separator">
                                             <rect key="frame" x="0.0" y="0.0" width="768" height="2"/>
-                                            <color key="backgroundColor" name="ListBackground"/>
+                                            <color key="backgroundColor" red="0.937" green="0.937" blue="0.957" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="2" id="YjP-dG-tUY"/>
                                             </constraints>
@@ -164,7 +163,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="{ViewableFieldCell}" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="L5V-vy-3To">
                                             <rect key="frame" x="20" y="10" width="728" height="19.5"/>
                                             <fontDescription key="fontDescription" type="system" weight="thin" pointSize="16"/>
-                                            <color key="textColor" name="PrimaryText"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                             <attributedString key="userComments">
                                                 <fragment content="#bc-ignore!"/>
@@ -175,7 +174,7 @@
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" scrollEnabled="NO" editable="NO" text="{Field Value}" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="4Cc-vV-vTv">
                                                     <rect key="frame" x="0.0" y="0.0" width="728" height="35.5"/>
-                                                    <color key="textColor" name="PrimaryText"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="16"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <attributedString key="userComments">
@@ -221,7 +220,7 @@
                                     <subviews>
                                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aJy-47-hZI" userLabel="Separator">
                                             <rect key="frame" x="0.0" y="0.0" width="768" height="2"/>
-                                            <color key="backgroundColor" name="ListBackground"/>
+                                            <color key="backgroundColor" red="0.937" green="0.937" blue="0.957" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="2" id="uEv-kl-LeH"/>
                                             </constraints>
@@ -229,7 +228,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="{Field Name}" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jZZ-fa-lax">
                                             <rect key="frame" x="20" y="10" width="728" height="19.5"/>
                                             <fontDescription key="fontDescription" type="system" weight="thin" pointSize="16"/>
-                                            <color key="textColor" name="PrimaryText"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                             <attributedString key="userComments">
                                                 <fragment content="#bc-ignore!"/>
@@ -240,7 +239,7 @@
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" scrollEnabled="NO" editable="NO" text="{Field Value}" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="1r1-bD-3m7">
                                                     <rect key="frame" x="0.0" y="0.0" width="728" height="35.5"/>
-                                                    <color key="textColor" name="PrimaryText"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="16"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <attributedString key="userComments">
@@ -266,7 +265,7 @@
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                     <inset key="contentEdgeInsets" minX="8" minY="8" maxX="8" maxY="8"/>
                                                     <state key="normal" image="view-more-accessory">
-                                                        <color key="titleColor" name="PrimaryText"/>
+                                                        <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </state>
                                                     <connections>
                                                         <action selector="didPressShowMore:" destination="t52-2d-lh5" eventType="touchUpInside" id="xH3-aW-umM"/>
@@ -288,7 +287,7 @@
                                                     <real key="value" value="20"/>
                                                 </userDefinedRuntimeAttribute>
                                                 <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
-                                                    <color key="value" name="ActionTint"/>
+                                                    <color key="value" red="0.0" green="0.478" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 </userDefinedRuntimeAttribute>
                                             </userDefinedRuntimeAttributes>
                                         </view>
@@ -325,7 +324,7 @@
                                     <subviews>
                                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5v5-u1-oSS" userLabel="Separator">
                                             <rect key="frame" x="0.0" y="0.0" width="768" height="2"/>
-                                            <color key="backgroundColor" name="ListBackground"/>
+                                            <color key="backgroundColor" red="0.937" green="0.937" blue="0.957" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="2" id="U5p-jl-SBu"/>
                                             </constraints>
@@ -333,7 +332,7 @@
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" verticalHuggingPriority="251" text="{Field Name}" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pBf-im-hEw">
                                             <rect key="frame" x="20" y="10" width="728" height="19.5"/>
                                             <fontDescription key="fontDescription" type="system" weight="thin" pointSize="16"/>
-                                            <color key="textColor" name="PrimaryText"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                             <attributedString key="userComments">
                                                 <fragment content="#bc-ignore!"/>
@@ -344,7 +343,7 @@
                                             <subviews>
                                                 <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" scrollEnabled="NO" editable="NO" text="{Field Value}" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="p7x-lw-Hyn">
                                                     <rect key="frame" x="0.0" y="0.0" width="135.5" height="39.5"/>
-                                                    <color key="textColor" name="PrimaryText"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="Menlo-Regular" family="Menlo" pointSize="16"/>
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <attributedString key="userComments">
@@ -363,7 +362,7 @@
                                         </scrollView>
                                         <progressView hidden="YES" opaque="NO" alpha="0.69999998807907104" contentMode="scaleToFill" horizontalHuggingPriority="249" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="fQz-ku-cXx">
                                             <rect key="frame" x="20" y="65" width="135.5" height="2"/>
-                                            <color key="tintColor" name="ActionTint"/>
+                                            <color key="tintColor" red="0.0" green="0.478" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </progressView>
                                     </subviews>
                                     <constraints>
@@ -411,7 +410,7 @@
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Copied" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vLP-Zc-bUc">
                                     <rect key="frame" x="0.0" y="0.0" width="63" height="45"/>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
-                                    <color key="textColor" name="ActionText"/>
+                                    <color key="textColor" red="1.0" green="1.0" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
                                     <attributedString key="userComments">
                                         <fragment content="Confirmation message: field value has been copied to clipboard."/>
@@ -423,7 +422,7 @@
                                         <bool key="isElement" value="NO"/>
                                     </accessibility>
                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
-                                    <color key="tintColor" name="ActionText"/>
+                                    <color key="tintColor" red="1.0" green="1.0" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <inset key="contentEdgeInsets" minX="8" minY="8" maxX="8" maxY="8"/>
                                     <state key="normal" image="export-listitem"/>
                                     <connections>
@@ -433,7 +432,7 @@
                             </subviews>
                         </stackView>
                     </subviews>
-                    <color key="backgroundColor" name="ActionTint"/>
+                    <color key="backgroundColor" red="0.0" green="0.478" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <constraints>
                         <constraint firstItem="b0f-OE-Umo" firstAttribute="centerX" secondItem="M5c-3i-Sj9" secondAttribute="centerX" id="9WT-Nh-awJ"/>
                         <constraint firstItem="b0f-OE-Umo" firstAttribute="centerY" secondItem="M5c-3i-Sj9" secondAttribute="centerY" priority="250" id="P4G-vT-7td"/>
@@ -447,21 +446,9 @@
             <point key="canvasLocation" x="4475.625" y="538.73239436619724"/>
         </scene>
     </scenes>
-    <color key="tintColor" name="ActionTint"/>
+    <color key="tintColor" red="0.0" green="0.478" blue="1.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
     <resources>
         <image name="export-listitem" width="29" height="29"/>
         <image name="view-more-accessory" width="25" height="25"/>
-        <namedColor name="ActionText">
-            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="ActionTint">
-            <color red="0.0" green="0.4779999852180481" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="PrimaryText">
-            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </namedColor>
-        <namedColor name="ListBackground">
-            <color red="0.94900000095367432" green="0.94900000095367432" blue="0.96899998188018799" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
     </resources>
 </document>

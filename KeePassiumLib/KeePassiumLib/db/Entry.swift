@@ -275,7 +275,7 @@ public class Entry: DatabaseItem, Eraseable {
     }
     
     public func setField(name: String, value: String, isProtected: Bool? = nil) {
-        if let field = fields.first { $0.name == name } {
+        if let field = fields.first(where: { $0.name == name }) {
             field.value = value
             if let isProtected = isProtected {
                 field.isProtected = isProtected

@@ -52,7 +52,7 @@ class FileListCell: UITableViewCell {
     
     private func setupCell() {
         if #available(iOS 13, *) {
-            spinner.style = .medium
+            spinner.style = .gray
         }
         let fileInfoButton = FileInfoAccessoryButton()
         accessoryView = fileInfoButton
@@ -112,7 +112,7 @@ class FileListCell: UITableViewCell {
     }
     
     var isAnimating: Bool {
-        get { spinner.isAnimating }
+        get { return spinner.isAnimating }
         set {
             if newValue {
                 spinner.isHidden = false

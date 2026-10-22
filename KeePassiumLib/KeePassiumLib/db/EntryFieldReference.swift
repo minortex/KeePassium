@@ -38,7 +38,7 @@ public class EntryFieldReference {
         case named(_ name: String)
         case otherNamed
         
-        public static func fromCode(_ code: Character) -> Self? {
+        public static func fromCode(_ code: Character) -> FieldType? {
             switch code {
             case "T": return .named(EntryField.title)
             case "U": return .named(EntryField.userName)

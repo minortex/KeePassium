@@ -31,6 +31,21 @@ public class Database2: Database {
                 return "v4.1"
             }
         }
+
+        public static func < (lhs: FormatVersion, rhs: FormatVersion) -> Bool {
+            return lhs.sortOrder < rhs.sortOrder
+        }
+
+        private var sortOrder: Int {
+            switch self {
+            case .v3:
+                return 0
+            case .v4:
+                return 1
+            case .v4_1:
+                return 2
+            }
+        }
     }
     
     public enum FormatError: LocalizedError {

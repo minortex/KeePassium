@@ -21,16 +21,24 @@ class KPApplication: UIApplication {
     }
 
     internal func showNetworkActivityIndicator() {
+        #if compiler(>=5.1)
         if #available(macCatalyst 13.0, *) {
         } else {
             isNetworkActivityIndicatorVisible = true
         }
+        #else
+        isNetworkActivityIndicatorVisible = true
+        #endif
     }
     
     internal func hideNetworkActivityIndicator() {
+        #if compiler(>=5.1)
         if #available(macCatalyst 13.0, *) {
         } else {
             isNetworkActivityIndicatorVisible = false
         }
+        #else
+        isNetworkActivityIndicatorVisible = false
+        #endif
     }
 }
