@@ -17,14 +17,16 @@
                         <subviews>
                             <imageView userInteractionEnabled="NO" alpha="0.30000001192092896" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="app-cover" translatesAutoresizingMaskIntoConstraints="NO" id="LUi-BW-CWA">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="250" id="qFM-W2-aV0"/>
+                                    <constraint firstAttribute="width" constant="250" id="zgc-Mr-jLD"/>
+                                </constraints>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="LUi-BW-CWA" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="0dS-8D-STK"/>
-                            <constraint firstItem="LUi-BW-CWA" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="Oo4-eF-k52"/>
-                            <constraint firstItem="LUi-BW-CWA" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="qFM-W2-aV0"/>
-                            <constraint firstItem="LUi-BW-CWA" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="zgc-Mr-jLD"/>
+                            <constraint firstItem="LUi-BW-CWA" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="0dS-8D-STK"/>
+                            <constraint firstItem="LUi-BW-CWA" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="Oo4-eF-k52"/>
                         </constraints>
                     </view>
                 </viewController>

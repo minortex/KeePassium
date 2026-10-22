@@ -65,6 +65,7 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
     private var databaseRefs: [URLReference] = []
     
     private weak var databaseUnlocker: UnlockDatabaseVC?
+    private var deletedDatabaseRef: URLReference?
     
     private var fileKeeperNotifications: FileKeeperNotifications!
     private var settingsNotifications: SettingsNotifications!
@@ -78,6 +79,9 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        navigationItem.rightBarButtonItem?.accessibilityLabel = NSLocalizedString(
+            "Add Database",
+            comment: "Action: add database")
         splitViewController?.preferredDisplayMode = .allVisible
         
         tableView.delegate = self
@@ -159,6 +163,14 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
                 showDetailViewController(PlaceholderVC.make(), sender: self)
                 return
             }
+        }
+
+        if let deletedDatabaseRef = deletedDatabaseRef,
+           databaseRefs.contains(deletedDatabaseRef) == false {
+            self.deletedDatabaseRef = nil
+            tableView.selectRow(at: nil, animated: true, scrollPosition: .none)
+            showDetailViewController(PlaceholderVC.make(), sender: self)
+            return
         }
         
         let canAutoSelectDatabase = isTwoPaneMode || Settings.current.isAutoUnlockStartupDatabase
@@ -463,7 +475,29 @@ class ChooseDatabaseVC: TableViewControllerWithContextActions, DynamicFileList, 
                 self?.didPressExportDatabase(at: indexPath)
             }
         )
-        return [exportAction]
+        let databaseRef = databaseRefs[indexPath.row]
+        let destructiveAction = ContextualAction(
+            title: DestructiveFileAction.get(for: databaseRef.location).title,
+            imageName: .trash,
+            style: .destructive,
+            color: nil,
+            handler: { [weak self, indexPath, databaseRef] in
+                guard let self = self else { return }
+                let popoverAnchor = PopoverAnchor(tableView: self.tableView, at: indexPath)
+                FileDestructionHelper.destroyFile(
+                    databaseRef,
+                    fileType: .database,
+                    withConfirmation: true,
+                    at: popoverAnchor,
+                    parent: self,
+                    completion: { [weak self] _ in
+                        guard let self = self else { return }
+                        self.deletedDatabaseRef = databaseRef
+                        self.updateDetailView(onlyInTwoPaneMode: false)
+                    })
+            }
+        )
+        return [exportAction, destructiveAction]
     }
 }
 

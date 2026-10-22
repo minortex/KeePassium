@@ -258,8 +258,8 @@
                             </subviews>
                             <constraints>
                                 <constraint firstItem="2xv-Oc-d9d" firstAttribute="centerX" secondItem="E7f-1W-hu7" secondAttribute="centerX" id="Cp7-vX-HC8"/>
-                                <constraint firstItem="22s-Ik-IgL" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="2xv-Oc-d9d" secondAttribute="trailing" id="Gt3-BG-1Ap"/>
-                                <constraint firstItem="2xv-Oc-d9d" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="22s-Ik-IgL" secondAttribute="leading" id="fds-GX-MKH"/>
+                                <constraint firstItem="E7f-1W-hu7" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="2xv-Oc-d9d" secondAttribute="trailing" id="Gt3-BG-1Ap"/>
+                                <constraint firstItem="2xv-Oc-d9d" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="E7f-1W-hu7" secondAttribute="leading" id="fds-GX-MKH"/>
                                 <constraint firstItem="2xv-Oc-d9d" firstAttribute="centerY" secondItem="E7f-1W-hu7" secondAttribute="centerY" id="sKo-lQ-lFX"/>
                             </constraints>
                         </view>

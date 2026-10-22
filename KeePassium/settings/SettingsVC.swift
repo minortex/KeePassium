@@ -15,8 +15,6 @@ class SettingsVC: UITableViewController, Refreshable {
     @IBOutlet weak var appSafetyCell: UITableViewCell!
     @IBOutlet weak var dataSafetyCell: UITableViewCell!
     @IBOutlet weak var dataBackupCell: UITableViewCell!
-    @IBOutlet weak var autoFillCell: UITableViewCell!
-    
     @IBOutlet weak var searchCell: UITableViewCell!
     @IBOutlet weak var autoUnlockStartupDatabaseSwitch: UISwitch!
     @IBOutlet weak var appearanceCell: UITableViewCell!
@@ -26,24 +24,9 @@ class SettingsVC: UITableViewController, Refreshable {
     @IBOutlet weak var rateTheAppCell: UITableViewCell!
     @IBOutlet weak var aboutAppCell: UITableViewCell!
     
-    @IBOutlet weak var premiumTrialCell: UITableViewCell!
-    @IBOutlet weak var premiumStatusCell: UITableViewCell!
-    @IBOutlet weak var manageSubscriptionCell: UITableViewCell!
-    @IBOutlet weak var appHistoryCell: UITableViewCell!
-    
     private var settingsNotifications: SettingsNotifications!
     
-    private var router: NavigationRouter! 
-    private let isPremiumSectionHidden = true
-    
-    private enum CellIndexPath {
-        static let premiumSectionIndex = 0
-        static let premiumTrial = IndexPath(row: 0, section: premiumSectionIndex)
-        static let premiumStatus = IndexPath(row: 1, section: premiumSectionIndex)
-        static let manageSubscription = IndexPath(row: 2, section: premiumSectionIndex)
-        static let appHistoryCell = IndexPath(row: 3, section: premiumSectionIndex)
-    }
-    private var hiddenIndexPaths = Set<IndexPath>()
+    private var router: NavigationRouter!
     
     static func make(popoverFromBar barButtonSource: UIBarButtonItem?=nil) -> UIViewController {
         let vc = SettingsVC.instantiateFromStoryboard()
@@ -64,8 +47,6 @@ class SettingsVC: UITableViewController, Refreshable {
         clearsSelectionOnViewWillAppear = true
         
         settingsNotifications = SettingsNotifications(observer: self)
-        hidePremiumCells()
-        autoFillCell.isHidden = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -111,48 +92,6 @@ class SettingsVC: UITableViewController, Refreshable {
         contactSupportCell.accessibilityValue = SupportEmailComposer.getSupportEmail()
     }
 
-    private func hidePremiumCells() {
-        premiumTrialCell.isHidden = true
-        premiumStatusCell.isHidden = true
-        manageSubscriptionCell.isHidden = true
-        appHistoryCell.isHidden = true
-        hiddenIndexPaths = Set([
-            CellIndexPath.premiumTrial,
-            CellIndexPath.premiumStatus,
-            CellIndexPath.manageSubscription,
-            CellIndexPath.appHistoryCell
-        ])
-    }
-    
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if hiddenIndexPaths.contains(indexPath) {
-            return 0.01
-        }
-        return super.tableView(tableView, heightForRowAt: indexPath)
-    }
-    
-    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        if section == CellIndexPath.premiumSectionIndex && isPremiumSectionHidden {
-            return 0.01
-        }
-        return super.tableView(tableView, heightForFooterInSection: section)
-    }
-    
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == CellIndexPath.premiumSectionIndex && isPremiumSectionHidden {
-            return 0.01
-        }
-        return super.tableView(tableView, heightForHeaderInSection: section)
-    }
-    
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if section == CellIndexPath.premiumSectionIndex && isPremiumSectionHidden {
-            return nil
-        }
-        return super.tableView(tableView, titleForHeaderInSection: section)
-    }
-    
-    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let selectedCell = tableView.cellForRow(at: indexPath) else { return }
@@ -193,14 +132,6 @@ class SettingsVC: UITableViewController, Refreshable {
     }
     
 
-    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        guard section == CellIndexPath.premiumSectionIndex else {
-            return super.tableView(tableView, titleForFooterInSection: section)
-        }
-        
-        return nil
-    }
-    
     @IBAction func doneButtonTapped(_ sender: Any) {
         dismissPopover(animated: true)
     }

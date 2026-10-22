@@ -62,37 +62,29 @@ public class DatabaseManager {
         }
 
         serialDispatchQueue.async {
-            guard let dbDoc = self.databaseDocument else {
-                DispatchQueue.main.async {
-                    callback?(nil)
-                }
-                return
-            }
-            Diag.debug("Will close database")
-            
-            let completionSemaphore = DispatchSemaphore(value: 0)
-            
             DispatchQueue.main.async {
-                dbDoc.close { [self] result in 
+                guard let dbDoc = self.databaseDocument else {
+                    callback?(nil)
+                    return
+                }
+                Diag.debug("Will close database")
+                dbDoc.close { [self] result in
                     switch result {
                     case .success:
                         self.handleDatabaseClosing()
                         callback?(nil)
-                        completionSemaphore.signal()
                     case .failure(let fileAccessError):
                         Diag.error("Failed to close database document [message: \(fileAccessError.localizedDescription)]")
                         if ignoreErrors {
                             Diag.warning("Ignoring errors and closing anyway")
                             self.handleDatabaseClosing()
-                            callback?(nil) 
+                            callback?(nil)
                         } else {
                             callback?(fileAccessError)
                         }
-                        completionSemaphore.signal()
                     }
                 }
             }
-            completionSemaphore.wait()
         }
     }
     
@@ -140,14 +132,18 @@ public class DatabaseManager {
     }
     
     private func _loadDatabase(dbRef: URLReference, compositeKey: CompositeKey) {
-        precondition(database == nil, "Can only load one database at a time")
+        if database != nil {
+            databaseDocument?.database = nil
+            databaseDocument = nil
+            databaseRef = nil
+        }
 
         Diag.info("Will load database")
         progress = ProgressEx()
         progress.totalUnitCount = ProgressSteps.all
         progress.completedUnitCount = ProgressSteps.start
         
-        precondition(databaseLoader == nil)
+        databaseLoader = nil
         databaseLoader = DatabaseLoader(
             dbRef: dbRef,
             compositeKey: compositeKey,

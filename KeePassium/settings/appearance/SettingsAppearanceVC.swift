@@ -102,6 +102,15 @@ class SettingsAppearanceVC: UITableViewController {
     }
     
     private func showAppIconSettings() {
+        if #available(iOS 10.3, *), UIApplication.shared.supportsAlternateIcons {
+        } else {
+            showErrorAlert(
+                NSLocalizedString(
+                    "[Appearance/AppIcon/Unsupported] Alternate app icons require iOS 10.3 or newer.",
+                    value: "Alternate app icons require iOS 10.3 or newer.",
+                    comment: "Message shown when alternate app icons are unavailable in the iOS 9 backport"))
+            return
+        }
         assert(appIconSwitcherCoordinator == nil)
         guard let router = router else { assertionFailure(); return }
         appIconSwitcherCoordinator = AppIconSwitcherCoordinator(router: router)

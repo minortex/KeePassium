@@ -160,12 +160,7 @@ public class DatabaseLoader: ProgressObserver {
                 guard let self = self else { return }
                 switch result {
                 case .success(let data):
-                    let dbDoc = DatabaseDocument(
-                        fileURL: url,
-                        fileProvider: .keepassiumWebDAV
-                    )
-                    dbDoc.data = data
-                    self.onDatabaseDocumentOpened(dbDoc: dbDoc, data: data)
+                    self.onRemoteDatabaseDataLoaded(data)
                 case .failure(let fileAccessError):
                     Diag.error("Failed to read remote database [error: \(fileAccessError.localizedDescription)]")
                     self.stopObservingProgress()
@@ -205,6 +200,28 @@ public class DatabaseLoader: ProgressObserver {
                 self.delegate?.databaseLoaderDidFinish(self, for: self.dbRef, withResult: nil)
                 self.endBackgroundTask()
             }
+        }
+    }
+
+    private func onRemoteDatabaseDataLoaded(_ data: ByteArray) {
+        guard let db = initDatabase(signature: data) else {
+            stopObservingProgress()
+            delegate?.databaseLoader(
+                self,
+                didFailLoading: dbRef,
+                message: LString.Error.unrecognizedDatabaseFormat,
+                reason: nil)
+            delegate?.databaseLoaderDidFinish(self, for: dbRef, withResult: nil)
+            endBackgroundTask()
+            return
+        }
+        let dbDoc = DatabaseDocument(fileProvider: .keepassiumWebDAV)
+        dbDoc.data = data
+        dbDoc.database = db
+        if compositeKey.state == .rawComponents {
+            onKeyFileDataReady(dbDoc: dbDoc, keyFileData: ByteArray())
+        } else {
+            onCompositeKeyComponentsProcessed(dbDoc: dbDoc, compositeKey: compositeKey)
         }
     }
     

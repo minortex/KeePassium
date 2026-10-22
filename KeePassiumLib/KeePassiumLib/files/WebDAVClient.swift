@@ -22,6 +22,7 @@ public final class WebDAVClient: NSObject {
         let completion: (Result<WebDAVResponse, FileAccessError>) -> Void
         var cancelReason: CancelReason?
         var receivedData = Data()
+        var isFinished = false
 
         init(
             credential: URLCredential,
@@ -162,6 +163,8 @@ public final class WebDAVClient: NSObject {
 
     private func finish(task: URLSessionTask, error: Error?) {
         guard let context = takeContext(for: task) else { return }
+        guard !context.isFinished else { return }
+        context.isFinished = true
 
         if let error = error {
             let nsError = error as NSError
@@ -241,18 +244,10 @@ extension WebDAVClient: URLSessionDataDelegate, URLSessionTaskDelegate {
             completionHandler(.cancelAuthenticationChallenge, nil)
             return
         }
-        if challenge.previousFailureCount > 0 {
-            let message = task.error?.localizedDescription
-                ?? NSLocalizedString(
-                    "[WebDAV] Authentication failed",
-                    bundle: Bundle.framework,
-                    value: "Authentication failed.",
-                    comment: "Error message: WebDAV server rejected the supplied credentials.")
-            context.cancelReason = .authenticationFailed(message)
+        guard !context.isFinished else {
             completionHandler(.cancelAuthenticationChallenge, nil)
             return
         }
-
         switch challenge.protectionSpace.authenticationMethod {
         case NSURLAuthenticationMethodHTTPBasic,
              NSURLAuthenticationMethodDefault:

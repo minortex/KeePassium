@@ -234,10 +234,10 @@ extension Data {
             throw GzipError(code: status, msg: stream.msg)
         }
         
-        var data = Data(capacity: self.count * 2)
+        var data = Data(capacity: Swift.max(self.count * 2, 64 * 1024))
         repeat {
             if Int(stream.total_out) >= data.count {
-                data.count += self.count / 2
+                data.count += Swift.max(data.count / 2, 64 * 1024)
             }
             
             let inputCount = self.count

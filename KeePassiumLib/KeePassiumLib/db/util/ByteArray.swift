@@ -326,14 +326,15 @@ public class ByteArray: Eraseable, Codable, CustomDebugStringConvertible {
     }
     
     public func asInputStream() -> ByteArray.InputStream {
-        return ByteArray.InputStream(data: Data(self.bytes))
+        return ByteArray.InputStream(data: Data(bytes: bytes, count: bytes.count))
     }
     public static func makeOutputStream() -> ByteArray.OutputStream {
         return ByteArray.OutputStream()
     }
     
     public func gunzipped() throws -> ByteArray {
-        return try ByteArray(data: Data(self.bytes).gunzipped())
+        let data = Data(bytes: bytes, count: bytes.count)
+        return try ByteArray(data: data.gunzipped())
     }
 
     public func gzipped() throws -> ByteArray {

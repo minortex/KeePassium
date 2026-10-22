@@ -11,6 +11,15 @@ import UIKit
 public class DatabaseDocument: BaseDocument {
     var database: Database?
 
+    public convenience init(fileURL: URL, fileProvider: FileProvider?) {
+        self.init(fileProvider: fileProvider)
+    }
+
+    public init(fileProvider: FileProvider?) {
+        super.init(fileURL: URL(fileURLWithPath: "/"))
+        self.fileProvider = fileProvider
+    }
+
     public override func save(
         _ completion: @escaping ((Result<Void, FileAccessError>) -> Void)
     ) {

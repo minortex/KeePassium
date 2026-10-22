@@ -44,13 +44,13 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="aMH-EU-BBX" firstAttribute="top" secondItem="O2i-Ah-XJl" secondAttribute="top" id="5w3-oc-f1U"/>
+                            <constraint firstItem="aMH-EU-BBX" firstAttribute="top" secondItem="rhT-YH-Zj0" secondAttribute="top" id="5w3-oc-f1U"/>
                             <constraint firstItem="P3O-53-The" firstAttribute="top" secondItem="aMH-EU-BBX" secondAttribute="bottom" id="GMR-1H-Ugc"/>
-                            <constraint firstItem="aMH-EU-BBX" firstAttribute="leading" secondItem="O2i-Ah-XJl" secondAttribute="leading" id="IMU-KN-Z0s"/>
-                            <constraint firstItem="aMH-EU-BBX" firstAttribute="trailing" secondItem="O2i-Ah-XJl" secondAttribute="trailing" id="Mk5-dT-nGm"/>
-                            <constraint firstItem="P3O-53-The" firstAttribute="leading" secondItem="O2i-Ah-XJl" secondAttribute="leading" id="N8q-xV-WAI"/>
-                            <constraint firstItem="O2i-Ah-XJl" firstAttribute="trailing" secondItem="P3O-53-The" secondAttribute="trailing" id="RAt-lO-Q0m"/>
-                            <constraint firstItem="O2i-Ah-XJl" firstAttribute="bottom" secondItem="P3O-53-The" secondAttribute="bottom" id="tEt-6c-P2B"/>
+                            <constraint firstItem="aMH-EU-BBX" firstAttribute="leading" secondItem="rhT-YH-Zj0" secondAttribute="leading" id="IMU-KN-Z0s"/>
+                            <constraint firstItem="aMH-EU-BBX" firstAttribute="trailing" secondItem="rhT-YH-Zj0" secondAttribute="trailing" id="Mk5-dT-nGm"/>
+                            <constraint firstItem="P3O-53-The" firstAttribute="leading" secondItem="rhT-YH-Zj0" secondAttribute="leading" id="N8q-xV-WAI"/>
+                            <constraint firstItem="rhT-YH-Zj0" firstAttribute="trailing" secondItem="P3O-53-The" secondAttribute="trailing" id="RAt-lO-Q0m"/>
+                            <constraint firstItem="rhT-YH-Zj0" firstAttribute="bottom" secondItem="P3O-53-The" secondAttribute="bottom" id="tEt-6c-P2B"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="aYD-Ph-1TF">
@@ -102,9 +102,9 @@
                                 </stackView>
                             </subviews>
                             <constraints>
-                                <constraint firstItem="DPz-iF-IQQ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="FcN-vT-Wi4" secondAttribute="leading" id="6hF-4c-PCR"/>
+                                <constraint firstItem="DPz-iF-IQQ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="pal-Aw-CDU" secondAttribute="leading" id="6hF-4c-PCR"/>
                                 <constraint firstItem="DPz-iF-IQQ" firstAttribute="centerY" secondItem="pal-Aw-CDU" secondAttribute="centerY" id="EfM-rP-zMT"/>
-                                <constraint firstItem="FcN-vT-Wi4" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="DPz-iF-IQQ" secondAttribute="trailing" id="aD3-fO-PvI"/>
+                                <constraint firstItem="pal-Aw-CDU" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="DPz-iF-IQQ" secondAttribute="trailing" id="aD3-fO-PvI"/>
                                 <constraint firstItem="DPz-iF-IQQ" firstAttribute="centerX" secondItem="pal-Aw-CDU" secondAttribute="centerX" id="tyw-JB-QKN"/>
                             </constraints>
                         </view>

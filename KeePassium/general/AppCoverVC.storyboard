@@ -17,14 +17,16 @@
                         <subviews>
                             <imageView userInteractionEnabled="NO" alpha="0.29999999999999999" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="app-cover" translatesAutoresizingMaskIntoConstraints="NO" id="Dot-Xj-o4N">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="250" id="iCZ-0L-amB"/>
+                                    <constraint firstAttribute="width" constant="250" id="zMr-ZN-vvF"/>
+                                </constraints>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="usb-Cf-IMf" firstAttribute="bottom" secondItem="Dot-Xj-o4N" secondAttribute="bottom" id="GdQ-qR-Hm3"/>
-                            <constraint firstItem="usb-Cf-IMf" firstAttribute="trailing" secondItem="Dot-Xj-o4N" secondAttribute="trailing" id="OIH-Zi-2gf"/>
-                            <constraint firstItem="Dot-Xj-o4N" firstAttribute="leading" secondItem="usb-Cf-IMf" secondAttribute="leading" id="iCZ-0L-amB"/>
-                            <constraint firstItem="Dot-Xj-o4N" firstAttribute="top" secondItem="usb-Cf-IMf" secondAttribute="top" id="zMr-ZN-vvF"/>
+                            <constraint firstItem="Dot-Xj-o4N" firstAttribute="centerX" secondItem="3xd-dk-vtK" secondAttribute="centerX" id="GdQ-qR-Hm3"/>
+                            <constraint firstItem="Dot-Xj-o4N" firstAttribute="centerY" secondItem="3xd-dk-vtK" secondAttribute="centerY" id="OIH-Zi-2gf"/>
                         </constraints>
                     </view>
                 </viewController>

@@ -31,6 +31,21 @@ class TableViewControllerWithContextActions: UITableViewController {
         let rowActions = getContextActionsForRow(at: indexPath, forSwipe: true)
         return rowActions.count > 0
     }
+
+    override func tableView(
+        _ tableView: UITableView,
+        editActionsForRowAt indexPath: IndexPath
+    ) -> [UITableViewRowAction]? {
+        if #available(iOS 13, *) { return nil }
+        let actions = getContextActionsForRow(at: indexPath, forSwipe: true)
+        guard !actions.isEmpty else { return nil }
+        return actions.map { action in
+            UITableViewRowAction(
+                style: action.style == .destructive ? .destructive : .normal,
+                title: action.title,
+                handler: { _, _ in action.handler() })
+        }
+    }
     
     @objc func didLongPressTableView(_ gestureRecognizer: UILongPressGestureRecognizer) {
         let point = gestureRecognizer.location(in: tableView)

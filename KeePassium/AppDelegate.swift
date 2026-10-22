@@ -20,6 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     fileprivate var appLockWindow: UIWindow?
     fileprivate var biometricsBackgroundWindow: UIWindow?
     fileprivate var isBiometricAuthShown = false
+    fileprivate var biometricAuthContext: LAContext?
     
     fileprivate let biometricAuthReuseDuration = TimeInterval(1.5)
     fileprivate var lastSuccessfulBiometricAuthTime: Date = .distantPast
@@ -186,6 +187,7 @@ extension AppDelegate: WatchdogDelegate {
     
     private func isBiometricsAvailable() -> Bool {
         let context = LAContext()
+        biometricAuthContext = context
         let policy = LAPolicy.deviceOwnerAuthenticationWithBiometrics
         return context.canEvaluatePolicy(policy, error: nil)
     }
@@ -225,6 +227,7 @@ extension AppDelegate: WatchdogDelegate {
                 }
                 self?.hideBiometricsBackground()
                 self?.isBiometricAuthShown = false
+                self?.biometricAuthContext = nil
             }
         }
         isBiometricAuthShown = true

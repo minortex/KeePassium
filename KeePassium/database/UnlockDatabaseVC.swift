@@ -70,9 +70,6 @@ class UnlockDatabaseVC: UIViewController, Refreshable {
         errorMessagePanel.alpha = 0.0
         errorMessagePanel.isHidden = true
         
-        passwordField.inputAssistantItem.leadingBarButtonGroups = []
-        passwordField.inputAssistantItem.trailingBarButtonGroups = []
-        
         let lockDatabaseButton = UIBarButtonItem(
             title: LString.actionCloseDatabase,
             style: .plain,

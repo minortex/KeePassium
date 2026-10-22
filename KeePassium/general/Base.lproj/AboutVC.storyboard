@@ -728,7 +728,6 @@
                         <outlet property="contactSupportCell" destination="lcp-fz-TzI" id="SFZ-rV-MFA"/>
                         <outlet property="resetTextScaleCell" destination="FW9-fw-Zgc" id="nh3-oo-qXX"/>
                         <outlet property="versionLabel" destination="vDg-fF-8ty" id="fc4-EY-VCt"/>
-                        <outlet property="writeReviewCell" destination="aun-72-lCX" id="EWW-SV-WVB"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="oUu-GI-B9Z" userLabel="First Responder" sceneMemberID="firstResponder"/>

@@ -60,6 +60,7 @@ public class Settings {
 
         case startupDatabase
         case autoUnlockStartupDatabase
+        case preferRemoteCache
         case rememberDatabaseKey
         case rememberDatabaseFinalKey
         case keepKeyFileAssociations
@@ -831,6 +832,21 @@ public class Settings {
                 oldValue: isAutoUnlockStartupDatabase,
                 newValue: newValue,
                 key: .autoUnlockStartupDatabase)
+        }
+    }
+
+    public var isPreferRemoteCache: Bool {
+        get {
+            let stored = UserDefaults.appGroupShared
+                .object(forKey: Keys.preferRemoteCache.rawValue)
+                as? Bool
+            return stored ?? false
+        }
+        set {
+            updateAndNotify(
+                oldValue: isPreferRemoteCache,
+                newValue: newValue,
+                key: .preferRemoteCache)
         }
     }
     

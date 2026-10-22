@@ -27,12 +27,13 @@ public class BaseDocument: UIDocument, Synchronizable {
         return queue
     }()
     
+    public override init(fileURL url: URL) {
+        super.init(fileURL: url)
+    }
+
     public convenience init(fileURL url: URL, fileProvider: FileProvider?) {
         self.init(fileURL: url)
         self.fileProvider = fileProvider
-    }
-    private override init(fileURL url: URL) {
-        super.init(fileURL: url)
     }
     
     public func open(_ callback: @escaping OpenCallback) {
@@ -46,25 +47,17 @@ public class BaseDocument: UIDocument, Synchronizable {
     {
         let operationQueue = queue ?? BaseDocument.backgroundQueue
         operationQueue.addOperation {
-            let semaphore = DispatchSemaphore(value: 0)
-            
-            var hasTimedOut = false
-            super.open { [self] (success) in
-                semaphore.signal()
-                if hasTimedOut {
-                    self.close(completionHandler: nil)
-                }
-            }
-            if semaphore.wait(timeout: .now() + timeout) == .timedOut {
-                hasTimedOut = true
-                callback(.failure(.timeout(fileProvider: self.fileProvider)))
-                return
-            }
-            
-            if let error = self.error {
-                callback(.failure(error))
-            } else {
+            do {
+                let contents = try Data(contentsOf: self.fileURL, options: .mappedIfSafe)
+                self.data = ByteArray(bytes: [UInt8](contents))
+                self.error = nil
                 callback(.success(self.data))
+            } catch {
+                let fileAccessError = FileAccessError.make(
+                    from: error,
+                    fileProvider: self.fileProvider)
+                self.error = fileAccessError
+                callback(.failure(fileAccessError))
             }
         }
     }
@@ -103,21 +96,9 @@ public class BaseDocument: UIDocument, Synchronizable {
     }
     
     public func close(_ completion: @escaping ((Result<Void, FileAccessError>) -> Void)) {
-        super.close(completionHandler: {
-            [weak self] (success) in
-            guard let self = self else { return }
-            if success {
-                self.error = nil
-                completion(.success)
-            } else {
-                if let error = self.error {
-                    completion(.failure(error))
-                } else {
-                    Diag.error("Closing unsuccessful, but without error info.")
-                    completion(.failure(.internalError))
-                }
-            }
-        })
+        data.erase()
+        data = ByteArray()
+        completion(.success)
     }
     
     override public func handleError(_ error: Error, userInteractionPermitted: Bool) {

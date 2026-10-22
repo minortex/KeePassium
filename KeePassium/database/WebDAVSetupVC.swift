@@ -24,7 +24,8 @@ private final class WebDAVTextFieldCell: UITableViewCell {
             textField.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             textField.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
             textField.topAnchor.constraint(equalTo: contentView.topAnchor),
-            textField.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            textField.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            textField.heightAnchor.constraint(greaterThanOrEqualToConstant: 44)
         ])
     }
 
@@ -50,6 +51,35 @@ private final class WebDAVTextFieldCell: UITableViewCell {
         textField.autocapitalizationType = .none
         textField.autocorrectionType = .no
         textField.accessibilityLabel = accessibilityLabel
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+private final class WebDAVLabelCell: UITableViewCell {
+    private let label = UILabel()
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+
+        selectionStyle = .none
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
+        contentView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            label.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
+            label.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor)
+        ])
+    }
+
+    func configure(text: String) {
+        label.text = text
     }
 
     required init?(coder: NSCoder) {
@@ -87,6 +117,11 @@ final class WebDAVSetupVC: UITableViewController {
         tableView.register(
             WebDAVTextFieldCell.self,
             forCellReuseIdentifier: "WebDAVTextFieldCell")
+        tableView.register(
+            WebDAVLabelCell.self,
+            forCellReuseIdentifier: "WebDAVLabelCell")
+        tableView.estimatedRowHeight = 44
+        tableView.rowHeight = UITableView.automaticDimension
     }
 
     required init?(coder: NSCoder) {
@@ -135,7 +170,14 @@ final class WebDAVSetupVC: UITableViewController {
             username: userNameText,
             password: passwordText,
             allowUntrustedCertificate: allowUntrustedCertificateSwitch.isOn)
-        CredentialManager.shared.store(credential: credential, for: serverURL)
+        do {
+            try CredentialManager.shared.store(credential: credential, for: serverURL)
+        } catch {
+            isSaving = false
+            saveButton.isEnabled = true
+            showErrorAlert(error)
+            return
+        }
 
         FileKeeper.shared.addFile(
             url: WebDAVFileURL.build(nakedURL: serverURL),
@@ -252,16 +294,22 @@ final class WebDAVSetupVC: UITableViewController {
                 }
             }
         case .certificate:
-            let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-            cell.textLabel?.text = "Allow self-signed certificate"
-            cell.selectionStyle = .none
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: "WebDAVLabelCell",
+                for: indexPath) as! WebDAVLabelCell
+            cell.configure(text: "Allow self-signed certificate")
+            allowUntrustedCertificateSwitch.setContentCompressionResistancePriority(
+                .required,
+                for: .horizontal)
             cell.accessoryView = allowUntrustedCertificateSwitch
             return cell
         case .instructions:
-            let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-            cell.textLabel?.text = "To use a local database, copy it into KeePassium Documents with iTunes File Sharing or Finder, then reopen the app."
-            cell.textLabel?.numberOfLines = 0
-            cell.selectionStyle = .none
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: "WebDAVLabelCell",
+                for: indexPath) as! WebDAVLabelCell
+            cell.configure(
+                text: "To use a local database, copy it into KeePassium Documents with iTunes File Sharing or Finder, then reopen the app.")
+            cell.accessoryView = nil
             return cell
         }
     }

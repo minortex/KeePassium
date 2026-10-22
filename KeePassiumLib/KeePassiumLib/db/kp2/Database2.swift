@@ -222,13 +222,16 @@ public class Database2: Database {
                     data: dbWithoutHeader,
                     cipher: header.dataCipher)
             }
+            dbWithoutHeader.erase()
             Diag.debug("Block decryption OK")
             Diag.verbose("== DB2 progress CP3: \(progress.completedUnitCount)")
             
             if header.isCompressed {
                 progress.localizedDescription = LString.Progress.database2DecompressingDatabase
                 Diag.debug("Inflating Gzip data")
-                decryptedData = try decryptedData.gunzipped() 
+                let compressedData = decryptedData
+                decryptedData = try compressedData.gunzipped()
+                compressedData.erase()
             } else {
                 Diag.debug("Data not compressed")
             }
@@ -248,6 +251,7 @@ public class Database2: Database {
             try removeGarbageAfterXML(data: xmlData) 
 
             try load(xmlData: xmlData, timeParser: self, warnings: warnings)
+            xmlData.erase()
             
             if let backupGroup = getBackupGroup(createIfMissing: false) {
                 backupGroup.deepSetDeleted(true)

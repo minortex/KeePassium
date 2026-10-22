@@ -67,13 +67,13 @@ internal class AEXMLParser: NSObject, XMLParserDelegate {
     
     func parser(_ parser: XMLParser, foundCharacters string: String) {
         currentValue.append(string)
-        currentElement?.value = currentValue.isEmpty ? nil : currentValue
     }
     
     func parser(_ parser: XMLParser,
                 didEndElement elementName: String,
                 namespaceURI: String?,
                 qualifiedName qName: String?) {
+        currentElement?.value = currentValue.isEmpty ? nil : currentValue
         if trimWhitespace {
             currentElement?.value = currentElement?.value?.trimmingCharacters(in: .whitespacesAndNewlines)
         }

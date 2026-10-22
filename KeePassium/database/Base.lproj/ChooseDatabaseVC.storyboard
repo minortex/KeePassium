@@ -211,7 +211,7 @@
                                 <action selector="didPressHelpButton:" destination="vWt-yt-cgE" id="C2G-nG-7ZZ"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Add Database" image="create-item-toolbar" id="qPq-UR-uZs">
+                        <barButtonItem key="rightBarButtonItem" image="create-item-toolbar" id="qPq-UR-uZs">
                             <attributedString key="userComments">
                                 <fragment content="Action: add database (either an existing file or create a new one)"/>
                             </attributedString>

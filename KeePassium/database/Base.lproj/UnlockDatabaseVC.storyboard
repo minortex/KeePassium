@@ -165,7 +165,6 @@
                                                     <constraint firstAttribute="trailingMargin" secondItem="CuN-tE-lAG" secondAttribute="trailing" id="O1R-4o-zHz"/>
                                                     <constraint firstItem="854-YG-tHO" firstAttribute="leading" secondItem="3xv-vB-0Jn" secondAttribute="leading" id="ayP-z8-IdO"/>
                                                     <constraint firstAttribute="bottom" secondItem="mYY-hP-3vH" secondAttribute="bottom" id="bSg-bu-ElE"/>
-                                                    <constraint firstItem="854-YG-tHO" firstAttribute="top" secondItem="Rb4-4d-9A9" secondAttribute="bottom" id="igJ-N8-90q"/>
                                                     <constraint firstItem="CuN-tE-lAG" firstAttribute="top" secondItem="3xv-vB-0Jn" secondAttribute="top" id="kvI-is-rJb"/>
                                                     <constraint firstItem="854-YG-tHO" firstAttribute="top" secondItem="CuN-tE-lAG" secondAttribute="bottom" id="sZa-3K-Joh"/>
                                                     <constraint firstItem="mYY-hP-3vH" firstAttribute="top" secondItem="854-YG-tHO" secondAttribute="bottom" id="v62-wO-G2n"/>
@@ -254,10 +253,10 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="cdl-k8-gTg" firstAttribute="leading" secondItem="fjp-FI-lys" secondAttribute="leading" id="D0r-G0-qVk"/>
-                            <constraint firstItem="cdl-k8-gTg" firstAttribute="trailing" secondItem="fjp-FI-lys" secondAttribute="trailing" id="Okf-K9-G8m"/>
-                            <constraint firstItem="fjp-FI-lys" firstAttribute="bottom" secondItem="cdl-k8-gTg" secondAttribute="bottom" priority="250" id="VaD-Ev-zg3" customClass="KeyboardLayoutConstraint" customModule="KeePassium" customModuleProvider="target"/>
-                            <constraint firstItem="cdl-k8-gTg" firstAttribute="top" secondItem="fjp-FI-lys" secondAttribute="top" id="dQA-ql-OqA"/>
+                            <constraint firstItem="cdl-k8-gTg" firstAttribute="leading" secondItem="bPc-V2-3Of" secondAttribute="leading" id="D0r-G0-qVk"/>
+                            <constraint firstItem="cdl-k8-gTg" firstAttribute="trailing" secondItem="bPc-V2-3Of" secondAttribute="trailing" id="Okf-K9-G8m"/>
+                            <constraint firstItem="bPc-V2-3Of" firstAttribute="bottom" secondItem="cdl-k8-gTg" secondAttribute="bottom" priority="250" id="VaD-Ev-zg3" customClass="KeyboardLayoutConstraint" customModule="KeePassium" customModuleProvider="target"/>
+                            <constraint firstItem="cdl-k8-gTg" firstAttribute="top" secondItem="bPc-V2-3Of" secondAttribute="top" id="dQA-ql-OqA"/>
                         </constraints>
                     </view>
                     <extendedEdge key="edgesForExtendedLayout"/>

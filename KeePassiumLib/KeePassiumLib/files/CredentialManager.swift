@@ -50,12 +50,10 @@ public final class CredentialManager {
         }
     }
 
-    public func store(credential: NetworkCredential, for url: URL) {
-        do {
-            try Keychain.shared.store(networkCredential: credential, for: canonicalURL(url))
-        } catch {
-            Diag.error("Failed to store network credential [message: \(error.localizedDescription)]")
-        }
+    public func store(credential: NetworkCredential, for url: URL) throws {
+        try Keychain.shared.store(
+            networkCredential: credential,
+            for: canonicalURL(url))
     }
 
     public func remove(for url: URL) {

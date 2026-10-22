@@ -136,7 +136,13 @@ public class URLReference:
 
     public var displayFileName: String {
         if location == .remote {
-            return originalURL?.lastPathComponent ?? "?"
+            guard let remoteURL = originalURL else { return "?" }
+            let sourceHash = String(ByteArray(
+                utf8String: WebDAVFileURL.canonicalize(remoteURL).absoluteString)
+                .sha256
+                .asHexString
+                .prefix(8))
+            return "\(remoteURL.lastPathComponent) · \(sourceHash)"
         }
         return url?.lastPathComponent ?? "?"
     }
@@ -535,8 +541,11 @@ public class URLReference:
     }
     
     public func getDescriptor() -> Descriptor? {
-        if location == .remote {
-            return cachedURL?.lastPathComponent
+        if location == .remote, let remoteURL = originalURL {
+            return ByteArray(utf8String: WebDAVFileURL.canonicalize(remoteURL).absoluteString)
+                .sha256
+                .asHexString
+                .lowercased()
         }
         if let resolvedFileName = resolvedURL?.lastPathComponent {
             return resolvedFileName

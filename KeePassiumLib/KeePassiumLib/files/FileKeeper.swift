@@ -782,7 +782,7 @@ public class FileKeeper {
                 withIntermediateDirectories: true,
                 attributes: nil)
             
-            try contents.asData.write(to: backupFileURL, options: .atomic)
+            try contents.write(to: backupFileURL, options: .atomic)
             try fileManager.setAttributes(
                 [FileAttributeKey.creationDate: timestamp,
                  FileAttributeKey.modificationDate: timestamp],
@@ -824,6 +824,12 @@ public class FileKeeper {
         completion: @escaping (Result<ByteArray, FileAccessError>) -> Void
     ) {
         let cacheURL = cacheFile(for: remoteURL)
+        if Settings.current.isPreferRemoteCache,
+           let cachedData = try? ByteArray(contentsOf: cacheURL) {
+            Diag.info("Using cached WebDAV database")
+            completion(.success(cachedData))
+            return
+        }
         guard let credential = CredentialManager.shared.get(for: remoteURL) else {
             completion(.failure(.authenticationFailed(
                 message: NSLocalizedString(
