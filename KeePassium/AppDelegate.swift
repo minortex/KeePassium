@@ -266,6 +266,7 @@ extension AppDelegate: WatchdogDelegate {
 
 extension AppDelegate: PasscodeInputDelegate {
     func passcodeInput(_ sender: PasscodeInputVC, didEnterPasscode passcode: String) {
+        sender.view.endEditing(true)
         do {
             if try Keychain.shared.isAppPasscodeMatch(passcode) { 
                 HapticFeedback.play(.appUnlocked)

@@ -58,6 +58,13 @@ class SettingsDataProtectionVC: UITableViewController, Refreshable {
         
         clipboardTimeoutCell.detailTextLabel?.text = settings.clipboardTimeout.shortTitle
     }
+
+    override func tableView(
+        _ tableView: UITableView,
+        heightForHeaderInSection section: Int
+    ) -> CGFloat {
+        return section == 0 ? 0 : super.tableView(tableView, heightForHeaderInSection: section)
+    }
     
     @IBAction func didToggleRememberMasterKeys(_ sender: UISwitch) {
         let isRemember = rememberMasterKeysSwitch.isOn

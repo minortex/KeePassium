@@ -74,8 +74,9 @@
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="e1v-nv-Mst" customClass="MultilineButton" customModule="KeePassium" customModuleProvider="target">
                                                     <rect key="frame" x="94" y="15" width="132" height="14"/>
                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
-                                                    <color key="tintColor" red="0.919" green="0.248" blue="0.146" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                    <state key="normal" title="Clear Master Keys"/>
+                                                    <state key="normal" title="Clear Master Keys">
+                                                        <color key="titleColor" red="0.919" green="0.248" blue="0.146" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </state>
                                                     <connections>
                                                         <action selector="didPressClearMasterKeys:" destination="IZZ-aM-g2i" eventType="touchUpInside" id="Msq-bi-tx7"/>
                                                     </connections>

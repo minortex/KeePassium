@@ -629,13 +629,13 @@
 "[Settings/AppLock/subtitle] App Lock, passcode, timeout" = "应用锁定, 应用解锁密码, 超时";
 
 /* Action to delete all backup files from the app. `ALL` is in capitals as a highlight. [backupFileCount: Int] */
-"[Settings/Backup] Delete ALL Backup Files (%d)" = "删除所有备份当案(%d)";
+"[Settings/Backup] Delete ALL Backup Files (%d)" = "删除所有备份文件(%d)";
 
 /* Status message: there are no backup files to delete */
 "[Settings/Backup] No Backup Files Found" = "没有找到备份文件";
 
 /* Confirmation dialog message to delete all backup files */
-"[Settings/Backup/Delete/title] Delete all backup files?" = "删除所有备份当案?";
+"[Settings/Backup/Delete/title] Delete all backup files?" = "删除所有备份文件？";
 
 /* Text of the success message for `Clear Key File Associations` button */
 "[Settings/ClearKeyFileAssociations/Cleared/text] Associations between key files and databases have been removed." = "密钥文件与数据库之间的关联已被删除。";

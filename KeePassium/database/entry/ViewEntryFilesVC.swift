@@ -32,6 +32,7 @@ class ViewEntryFilesVC: UITableViewController, Refreshable {
         entry?.touch(.accessed)
         
         navigationItem.rightBarButtonItem = nil
+        tableView.rowHeight = 58
         
         exportController = UIDocumentInteractionController()
     }

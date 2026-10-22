@@ -46,6 +46,8 @@ class ViewEntryVC: UIViewController, Refreshable {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        edgesForExtendedLayout = []
+        automaticallyAdjustsScrollViewInsets = false
         guard let entry = entry else { return }
         
         pages.append(ViewEntryFieldsVC.make(with: entry, historyMode: isHistoryMode))

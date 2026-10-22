@@ -74,6 +74,13 @@ class SettingsBackupVC: UITableViewController {
         }
     }
 
+    override func tableView(
+        _ tableView: UITableView,
+        heightForHeaderInSection section: Int
+    ) -> CGFloat {
+        return section < 2 ? 0 : super.tableView(tableView, heightForHeaderInSection: section)
+    }
+
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let selectedCell = tableView.cellForRow(at: indexPath) else { return }

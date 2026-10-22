@@ -105,9 +105,6 @@ class ViewEntryFieldsVC: UITableViewController, Refreshable {
         super.viewDidLoad()
         self.clearsSelectionOnViewWillAppear = true
         
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 44
-
         copiedCellView.delegate = self
         
         entryChangeNotifications = EntryChangeNotifications(observer: self)
@@ -148,6 +145,36 @@ class ViewEntryFieldsVC: UITableViewController, Refreshable {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sortedFields.count
     }
+
+    override func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
+        let field = sortedFields[indexPath.row]
+        if field is TOTPViewableField {
+            return 80
+        }
+
+        let textScale = Settings.current.textScale
+        let valueFont = UIFont.monospaceFont(ofSize: 17 * textScale, forTextStyle: .body)
+        let availableWidth = tableView.bounds.width - 40
+        let value = displayValue(for: field)
+        let valueHeight = (value as NSString).boundingRect(
+            with: CGSize(width: availableWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: valueFont],
+            context: nil
+        ).height
+        let rowHeight = 8 + 20 + valueHeight + 24
+
+        if field.internalName == EntryField.notes,
+           field.isHeightConstrained,
+           valueHeight > 150
+        {
+            return rowHeight - valueHeight + 150
+        }
+        return max(60, ceil(rowHeight))
+    }
     
     override func tableView(
         _ tableView: UITableView,
@@ -162,6 +189,16 @@ class ViewEntryFieldsVC: UITableViewController, Refreshable {
             field: field)
         cell.delegate = self
         return cell
+    }
+
+    func displayValue(for field: ViewableField) -> String {
+        let shouldHideField =
+            (field.isProtected || field.internalName == EntryField.password)
+            && Settings.current.isHideProtectedFields
+        if shouldHideField && field.isValueHidden {
+            return "* * * *"
+        }
+        return field.decoratedValue ?? ""
     }
     
     
@@ -194,10 +231,12 @@ extension ViewEntryFieldsVC: EntryChangeObserver {
 
 extension ViewEntryFieldsVC: ViewableFieldCellDelegate {    
     func cellHeightDidChange(_ cell: ViewableFieldCell) {
-        tableView.beginUpdates()
-        tableView.endUpdates()
-        
         guard let viewableField = cell.field else { return }
+        if let indexPath = tableView.indexPath(for: cell) {
+            UIView.performWithoutAnimation { [weak self] in
+                self?.tableView.reloadRows(at: [indexPath], with: .none)
+            }
+        }
         if viewableField.internalName == EntryField.notes {
             let isCollapsed = viewableField.isHeightConstrained
             Settings.current.isCollapseNotesField = isCollapsed
